@@ -23,6 +23,7 @@ class Stats{
         physDMG=false;
         isAlive=true;
     }
+//<<<<<<< HEAD
     public Stats(String name, String Class, int hp, int str,int spd, int def, int res, Boolean pdmg){
         this.name=name;
         this.clasa=Class;
@@ -33,6 +34,8 @@ class Stats{
         this.res=res;
         physDMG=pdmg;
     }
+//=======
+//>>>>>>> 1d4d000 (git commit)
     public void takeDamage(Stats s){
         Integer dmgTaken;
         if(this.isAlive&&s.isAlive) {
@@ -105,8 +108,11 @@ public class Character extends Stats{
         coordX = x;
         coordY = y;
     }
+//<<<<<<< HEAD
     public int getX(){return coordX;}
     public int getY(){return coordY;}
+//=======
+//>>>>>>> 1d4d000 (git commit)
     public Boolean getCanMove() {
         return canMove;
     }

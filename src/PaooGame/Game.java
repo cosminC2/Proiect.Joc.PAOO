@@ -13,7 +13,6 @@ import java.awt.image.BufferStrategy;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
-
 /*! \class Game
     \brief Clasa principala a intregului proiect. Implementeaza Game - Loop (Update -> Draw)
 
@@ -136,6 +135,7 @@ public class Game implements Runnable
                 {4, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
                 {4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
                 {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
+
         };
     }
 

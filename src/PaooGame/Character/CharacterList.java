@@ -44,12 +44,12 @@ public class CharacterList {
         add(2,3);
         add(4,3);
         add(3,4);
-        addEnemy(2,10);
-        addEnemy(2,8);
-        addEnemy(11,3);
-        addEnemy(11,10);
-        addEnemy(13,2);
-        addEnemy(10,0);
+        addEnemy(12,7);
+        addEnemy(8,8);
+        addEnemy(3,5);
+        addEnemy(7,4);
+        addEnemy(8,9);
+        addEnemy(3,7);
         charList.get(4).spd-=6;
     }
 
