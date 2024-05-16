@@ -7,6 +7,7 @@ import PaooGame.Character.GameCursor;
 import PaooGame.GameWindow.GameWindow;
 import PaooGame.Graphics.Assets;
 import PaooGame.Tiles.Tile;
+import PaooGame.Misc.AStar;
 
 import java.awt.*;
 import java.awt.image.BufferStrategy;
@@ -116,25 +117,25 @@ public class Game implements Runnable
         cm = new CharacterMenu();
         cm.init();
         gameProgressState = null;
-        String filenameArray="GridArrayLv1";
-        BufferedReader bfr = new BufferedReader(new FileReader("/res/gameData/GridArrayLv1.txt"));
+        //String filenameArray="GridArrayLv1";
+        //BufferedReader bfr = new BufferedReader(new FileReader("/res/gameData/GridArrayLv1.txt"));
         mapTable= new Integer[][]{
                 {3, 3, 0, 0, 0, 2, 2, 2, 0, 0, 0, 3, 3},
                 {3, 0, 0, 1, 1, 2, 6, 2, 1, 1, 0, 0, 3},
-                {0, 0, 1, 1, 9, 9, 9, 9, 9, 1, 1, 0, 0},
-                {0, 1, 1, 9, 9, 9, 9, 9, 9, 9, 1, 1, 0},
-                {0, 1, 9, 9, 9, 9, 9, 9, 9, 9, 9, 1, 0},
-                {0, 1, 1, 9, 9, 9, 9, 9, 9, 9, 1, 1, 0},
-                {0, 0, 1, 1, 9, 9, 9, 9, 9, 1, 1, 0, 0},
+                {0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0},
+                {0, 1, 1, 9, 9, 9, 1, 1, 9, 9, 9, 1, 0},
+                {0, 1, 1, 9, 9, 9, 1, 1, 9, 9, 9, 1, 0},
+                {0, 1, 1, 9, 9, 9, 1, 1, 9, 9, 9, 1, 0},
+                {0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0},
                 {3, 0, 0, 1, 1, 2, 6, 2, 1, 1, 0, 0, 3},
                 {3, 3, 0, 0, 0, 2, 2, 2, 0, 0, 0, 3, 3},
-                {3, 7, 7, 7, 3, 3, 5, 3, 3, 4, 4, 4, 0},
-                {0, 7, 7, 7, 3, 3, 5, 3, 3, 0, 0, 0, 0},
-                {0, 7, 7, 7, 3, 3, 3, 3, 3, 0, 1, 1, 1},
-                {0, 0, 0, 0, 3, 3, 3, 3, 3, 0, 1, 0, 1},
-                {4, 4, 4, 0, 3, 3, 0, 3, 3, 0, 1, 1, 1},
-                {4, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-                {4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                {0, 4, 4, 4, 0, 3, 3, 3, 0, 7, 7, 7, 0},
+                {0, 0, 0, 4, 0, 3, 5, 3, 0, 7, 7, 7, 0},
+                {0, 0, 0, 4, 0, 3, 3, 3, 0, 7, 7, 7, 0},
+                {0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                {0, 1, 1, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0},
+                {0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0},
+                {0, 1, 1, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0},
                 {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
 
         };
@@ -441,6 +442,7 @@ public class Game implements Runnable
             if(cursor.getSelectedChar()!=null)
             {
                 if(cursor.getSelectedChar().getMoving()==true) {
+                    System.out.println(CheckMovement(cursor));
                     cursor.getSelectedChar().set(cursor.getX(), cursor.getY());
                     cursor.getSelectedChar().setMoving(false);
                     cursor.getSelectedChar().setCanMove(false);
@@ -535,10 +537,12 @@ public class Game implements Runnable
         int startY= cursor.getSelectedChar().getY();
         int endX= cursor.getX();
         int endY= cursor.getY();
-        //TODO:A* ALGORITHM GOES HERE fn(startX,startY,endX,endY)
+        if(AStar.aStar(mapTable,startX,startY,endX,endY) <= cursor.getSelectedChar().getStat("MOV"))
+            return true;
+        else return false;
         //algoritm A* dar in loc de a utiliza noduri, folosesc coordonate in grid
         //care tehnic vorbind este acelasi lucru, dar intr-o reprezentare diferita
-        return true;
+
     }
 
 }

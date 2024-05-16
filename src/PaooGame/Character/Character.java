@@ -8,7 +8,7 @@ import java.awt.*;
 class Stats{
     protected String name;
     protected String clasa;
-    protected Integer hp, maxhp, str, spd, def, res;
+    protected Integer hp, maxhp, str, spd, def, res, mov;
     protected Boolean physDMG;
     protected Boolean isAlive;
     public Stats(){
@@ -20,11 +20,12 @@ class Stats{
         spd=12;
         def=11;
         res=3;
+        mov=5;
         physDMG=false;
         isAlive=true;
     }
 //<<<<<<< HEAD
-    public Stats(String name, String Class, int hp, int str,int spd, int def, int res, Boolean pdmg){
+    public Stats(String name, String Class, int hp, int str,int spd, int def, int res, int mov, Boolean pdmg){
         this.name=name;
         this.clasa=Class;
         this.hp=hp;
@@ -32,6 +33,7 @@ class Stats{
         this.spd=spd;
         this.def=def;
         this.res=res;
+        this.mov=mov;
         physDMG=pdmg;
     }
 //=======
@@ -59,6 +61,7 @@ class Stats{
             case "SPD": return spd;
             case "DEF": return def;
             case "RES": return res;
+            case "MOV": return mov;
             default: return -99;
         }
     }

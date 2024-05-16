@@ -55,6 +55,14 @@ public class Assets
         rockLeft = sheet.crop(0, 3);
         rockRight = sheet.crop(1, 3);
         cursor = sheet.crop(7,1);
+        //DE REFACUT APPROXIMATIV TOT
+        //MUIE TILE SHEETS
+        //defapt, ar trebui sa refac sistemul intreg SA MA LASE SA FAC DOUA SUTE TILE-URI
+        //ok dar fiecare tile ii o clasa in sine
+        //OH I KNOW
+        //https://i.imgur.com/1JMp4Vd.png
+        //gandeste tu ceva cand nu ii ora 2 noaptea
+
         mainMenu = ImageLoader.LoadImage("/textures/PaooTitleScreen.png");
         gameOverScreen = ImageLoader.LoadImage("/textures/PaooGameOverScreen.png");
     }
