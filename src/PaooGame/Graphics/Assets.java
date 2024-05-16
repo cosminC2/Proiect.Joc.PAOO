@@ -25,6 +25,8 @@ public class Assets
     public static BufferedImage rockRight;
     public static BufferedImage tree;
     public static BufferedImage cursor;
+    public static BufferedImage mainMenu;
+    public static BufferedImage gameOverScreen;
 
     /*! \fn public static void Init()
         \brief Functia initializaza referintele catre elementele grafice utilizate.
@@ -53,5 +55,7 @@ public class Assets
         rockLeft = sheet.crop(0, 3);
         rockRight = sheet.crop(1, 3);
         cursor = sheet.crop(7,1);
+        mainMenu = ImageLoader.LoadImage("/textures/PaooTitleScreen.png");
+        gameOverScreen = ImageLoader.LoadImage("/textures/PaooGameOverScreen.png");
     }
 }

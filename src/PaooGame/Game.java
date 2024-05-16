@@ -70,7 +70,7 @@ public class Game implements Runnable
     private Graphics        g;          /*!< Referinta catre un context grafic.*/
     private Integer[][] mapTable;
 
-
+    private Boolean gameProgressState;
     private Tile tile; /*!< variabila membra temporara. Este folosita in aceasta etapa doar pentru a desena ceva pe ecran.*/
 
     /*! \fn public Game(String title, int width, int height)
@@ -115,6 +115,7 @@ public class Game implements Runnable
         cursor = new GameCursor();
         cm = new CharacterMenu();
         cm.init();
+        gameProgressState = null;
         String filenameArray="GridArrayLv1";
         BufferedReader bfr = new BufferedReader(new FileReader("/res/gameData/GridArrayLv1.txt"));
         mapTable= new Integer[][]{
@@ -243,9 +244,13 @@ public class Game implements Runnable
      */
     private void Update()
     {
+        if(gameProgressState==null) {
+            UpdateCursorMovement();
+            PerformAction();
+        }
+        else {
 
-        UpdateCursorMovement();
-        PerformAction();
+        }
 
     }
 
@@ -320,29 +325,27 @@ public class Game implements Runnable
                     }
 
                 }
-                if(cl.contains(cursor.getX(), cursor.getY())) {
+                if (cl.contains(cursor.getX(), cursor.getY())) {
                     //System.out.println("HOVER ON UNIT");
-                    if(cl.find(cursor.getX(), cursor.getY())!=null)
+                    if (cl.find(cursor.getX(), cursor.getY()) != null)
                         cl.find(cursor.getX(), cursor.getY()).Draw(wnd);
                 }
 
             }
-            if(cm.getOpen())
-            {
+            if (cm.getOpen()) {
                 System.out.println("OPEN");
-                cm.draw(g,cursor.getX() * Tile.TILE_WIDTH, cursor.getY() * Tile.TILE_HEIGHT);
+                cm.draw(g, cursor.getX() * Tile.TILE_WIDTH, cursor.getY() * Tile.TILE_HEIGHT);
             }
-            if(cursor.getSelectedChar()!=null) {
+            if (cursor.getSelectedChar() != null) {
                 System.out.println("Selected character");
-                if(cursor.getSelectedChar().getDisplayStats())
-                {
+                if (cursor.getSelectedChar().getDisplayStats()) {
                     System.out.println("DISPLAYING MENU");
                     cursor.getSelectedChar().dispStats(wnd);
                 }
             }
 
             //g.drawRect(cursor.getX() * Tile.TILE_WIDTH, cursor.getY() * Tile.TILE_HEIGHT, Tile.TILE_WIDTH, Tile.TILE_HEIGHT);
-            if(!(cursor.getSelectedChar()!=null&&cursor.getSelectedChar().getDisplayStats()))
+            if (!(cursor.getSelectedChar() != null && cursor.getSelectedChar().getDisplayStats()))
                 Tile.cursorTile.Draw(g, cursor.getX() * Tile.TILE_WIDTH, cursor.getY() * Tile.TILE_HEIGHT);
 
             // end operatie de desenare
@@ -511,22 +514,20 @@ public class Game implements Runnable
         }
     }
 
-
-    public Boolean CheckCollision(String Direction){
-        switch(Direction){
-            case "UP":
-            case "DOWN":
-            case "LEFT":
-            case "RIGHT":
-            default:break;
+    public Boolean updateGameState(){
+        if(cl.hasEnemy()==false){
+            //nu mai sunt inamici pe harta - true
+            return true;
         }
-        return true;
-    }
-
-    public void CheckGameState(){
-        if(!(cl.hasHeroes()&&cl.hasEnemy())){
+        if(cl.hasHeroes()==false){
+            //nu mai sunt eroi pe harta - false
+            //TODO: adaugat special conditie pentru personaj principal
+            return false;
         }
-
+        //daca conditia de esec, dar nici conditia de castig nu sunt indeplinite
+        //adica jocul este in plina desfasurare, se returneaza void
+        //in alte cuvinte, Boolean-ul gameProgressState functioneaza ca un endgame check
+        return null;
     }
 
     public boolean CheckMovement(GameCursor cursor){
