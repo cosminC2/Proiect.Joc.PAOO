@@ -289,42 +289,42 @@ public class Game implements Runnable
             // ...............
             for (int tileCoordX = 0; tileCoordX * Tile.TILE_WIDTH < wnd.GetWndWidth(); tileCoordX++) {
                 for (int tileCoordY = 0; tileCoordY * Tile.TILE_HEIGHT < wnd.GetWndHeight(); tileCoordY++) {
-
-                    switch(mapTable[tileCoordX][tileCoordY])
+                    if(isInFog(tileCoordX,tileCoordY))
                     {
-                        case 0:
-                            Tile.grassTile.Draw(g, tileCoordX * Tile.TILE_WIDTH, tileCoordY * Tile.TILE_HEIGHT);
-                            break;
-                        case 1:
-                        case 5:
-                        case 6:
-                        case 7:
-                        case 8:
-                        case 9:
-                            Tile.mountainTile.Draw(g, tileCoordX * Tile.TILE_WIDTH, tileCoordY * Tile.TILE_HEIGHT);
-                            break;
-                        case 4:
-                            Tile.soilTile.Draw(g, tileCoordX * Tile.TILE_WIDTH, tileCoordY * Tile.TILE_HEIGHT);
-                            break;
-                        case 3:
-                            Tile.treeTile.Draw(g, tileCoordX * Tile.TILE_WIDTH, tileCoordY * Tile.TILE_HEIGHT);
-                            break;
-                        case 2:
-                            Tile.waterTile.Draw(g, tileCoordX * Tile.TILE_WIDTH, tileCoordY * Tile.TILE_HEIGHT);
-                            break;
-                        default:
-                            System.out.println("ERROR RENDERING TILES FROM MAP");
+                        switch (mapTable[tileCoordX][tileCoordY]) {
+                            case 0:
+                                Tile.grassTile.Draw(g, tileCoordX * Tile.TILE_WIDTH, tileCoordY * Tile.TILE_HEIGHT);
+                                break;
+                            case 1:
+                            case 5:
+                            case 6:
+                            case 7:
+                            case 8:
+                            case 9:
+                                Tile.mountainTile.Draw(g, tileCoordX * Tile.TILE_WIDTH, tileCoordY * Tile.TILE_HEIGHT);
+                                break;
+                            case 4:
+                                Tile.soilTile.Draw(g, tileCoordX * Tile.TILE_WIDTH, tileCoordY * Tile.TILE_HEIGHT);
+                                break;
+                            case 3:
+                                Tile.treeTile.Draw(g, tileCoordX * Tile.TILE_WIDTH, tileCoordY * Tile.TILE_HEIGHT);
+                                break;
+                            case 2:
+                                Tile.waterTile.Draw(g, tileCoordX * Tile.TILE_WIDTH, tileCoordY * Tile.TILE_HEIGHT);
+                                break;
+                            default:
+                                System.out.println("ERROR RENDERING TILES FROM MAP");
+                        }
+
+
+                        if (cl.contains(tileCoordX, tileCoordY)) {
+                            if (!cl.find(tileCoordX, tileCoordY).getEnemy())
+                                Tile.playerLTile.Draw(g, tileCoordX * Tile.TILE_WIDTH, tileCoordY * Tile.TILE_HEIGHT);
+                            else
+                                Tile.playerRTile.Draw(g, tileCoordX * Tile.TILE_WIDTH, tileCoordY * Tile.TILE_HEIGHT);
+
+                        }
                     }
-
-
-                    if(cl.contains(tileCoordX,tileCoordY)){
-                        if(!cl.find(tileCoordX, tileCoordY).getEnemy())
-                            Tile.playerLTile.Draw(g, tileCoordX * Tile.TILE_WIDTH, tileCoordY * Tile.TILE_HEIGHT);
-                        else
-                            Tile.playerRTile.Draw(g, tileCoordX * Tile.TILE_WIDTH, tileCoordY * Tile.TILE_HEIGHT);
-
-                    }
-
                 }
                 if (cl.contains(cursor.getX(), cursor.getY())) {
                     //System.out.println("HOVER ON UNIT");
@@ -543,6 +543,20 @@ public class Game implements Runnable
         //algoritm A* dar in loc de a utiliza noduri, folosesc coordonate in grid
         //care tehnic vorbind este acelasi lucru, dar intr-o reprezentare diferita
 
+    }
+
+    public boolean isInFog(int x, int y){
+        boolean ok = false;
+        for(Character unit: cl.charList)
+        {
+            if(unit.getEnemy()==false)
+            {
+                int distance = Math.abs(x-unit.getX())+Math.abs(y-unit.getY());
+                if(distance < unit.getStat("MOV")+3)
+                    ok = true;
+            }
+        }
+        return ok;
     }
 
 }

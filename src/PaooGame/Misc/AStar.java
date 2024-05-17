@@ -63,9 +63,14 @@ public class AStar {
         return Math.abs(a.x - b.x) + Math.abs(a.y - b.y); // Manhattan distance
     }
 
-    private static int tileMovementMultiplier(int x, int y, Integer[][] grid){
+    private static double tileMovementMultiplier(int x, int y, Integer[][] grid){
         switch(grid[x][y]){
-            case 1:
+            case 1://grass
+                return 1;
+            case 2://water
+                return 999;
+            case 3://forest
+                return 1.4;
         }
         return 2;
     }
