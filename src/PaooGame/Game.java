@@ -325,6 +325,15 @@ public class Game implements Runnable
 
                         }
                     }
+                    if(cursor.getSelectedChar()!=null&&cursor.getSelectedChar().getMoving()){
+                        int range = AStar.aStar(mapTable,cursor.getSelectedChar().getX(),cursor.getSelectedChar().getY(),tileCoordX,tileCoordY);
+                        if(range<=cursor.getSelectedChar().getStat("MOV")*10)
+                        {
+                            Tile.hoverTile.Draw(g, tileCoordX * Tile.TILE_WIDTH, tileCoordY * Tile.TILE_HEIGHT);
+                        } else if (range<=(cursor.getSelectedChar().getStat("MOV")+1)*10) {
+                            Tile.attackTile.Draw(g, tileCoordX * Tile.TILE_WIDTH, tileCoordY * Tile.TILE_HEIGHT);
+                        }
+                    }
                 }
                 if (cl.contains(cursor.getX(), cursor.getY())) {
                     //System.out.println("HOVER ON UNIT");
@@ -442,11 +451,13 @@ public class Game implements Runnable
             if(cursor.getSelectedChar()!=null)
             {
                 if(cursor.getSelectedChar().getMoving()==true) {
-                    System.out.println(CheckMovement(cursor));
-                    cursor.getSelectedChar().set(cursor.getX(), cursor.getY());
-                    cursor.getSelectedChar().setMoving(false);
-                    cursor.getSelectedChar().setCanMove(false);
-                    cursor.setSelectedChar(null);
+                    System.out.println(AStar.aStar(mapTable,cursor.getSelectedChar().getX(),cursor.getSelectedChar().getY(), cursor.getX(),cursor.getY()));
+                    if (CheckMovement(cursor)) {
+                        cursor.getSelectedChar().set(cursor.getX(), cursor.getY());
+                        cursor.getSelectedChar().setMoving(false);
+                        cursor.getSelectedChar().setCanMove(false);
+                        cursor.setSelectedChar(null);
+                    }
                 }else {
                     if (cursor.getSelectedChar().getDisplayStats()) {
                         cursor.getSelectedChar().setDisplayStats(false);
@@ -537,7 +548,7 @@ public class Game implements Runnable
         int startY= cursor.getSelectedChar().getY();
         int endX= cursor.getX();
         int endY= cursor.getY();
-        if(AStar.aStar(mapTable,startX,startY,endX,endY) <= cursor.getSelectedChar().getStat("MOV"))
+        if(AStar.aStar(mapTable,startX,startY,endX,endY) <= (cursor.getSelectedChar().getStat("MOV")*10))
             return true;
         else return false;
         //algoritm A* dar in loc de a utiliza noduri, folosesc coordonate in grid

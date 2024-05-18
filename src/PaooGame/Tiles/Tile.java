@@ -21,6 +21,8 @@ public class Tile
     public static Tile playerLTile      = new PlayerLeftTile(5);
     public static Tile playerRTile      = new PlayerRightTile(6);
     public static Tile cursorTile       = new CursorTile(7);
+    public static Tile hoverTile        = new HoverTile(8);
+    public static Tile attackTile       = new AttackTile(9);
 
     public static final int TILE_WIDTH  = 48;                       /*!< Latimea unei dale.*/
     public static final int TILE_HEIGHT = 48;                       /*!< Inaltimea unei dale.*/

@@ -25,6 +25,8 @@ public class Assets
     public static BufferedImage rockRight;
     public static BufferedImage tree;
     public static BufferedImage cursor;
+    public static BufferedImage hover;
+    public static BufferedImage attack;
     public static BufferedImage mainMenu;
     public static BufferedImage gameOverScreen;
 
@@ -55,6 +57,8 @@ public class Assets
         rockLeft = sheet.crop(0, 3);
         rockRight = sheet.crop(1, 3);
         cursor = sheet.crop(7,1);
+        hover = sheet.crop(15,1);
+        attack = sheet.crop(16,1);
         //DE REFACUT APPROXIMATIV TOT
         //MUIE TILE SHEETS
         //defapt, ar trebui sa refac sistemul intreg SA MA LASE SA FAC DOUA SUTE TILE-URI

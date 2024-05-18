@@ -27,8 +27,8 @@ public class AStar {
         }
     }
     public static int aStar(Integer[][] grid, int startX, int startY, int goalX, int goalY){
-        Node start = new Node(startX,startY, grid[startX][startY],0);
-        Node goal = new Node(goalX, goalY, grid[goalX][goalY],0);
+        Node start = new Node(startX,startY, tileMovementMultiplier(startX,startY,grid),0);
+        Node goal = new Node(goalX, goalY, tileMovementMultiplier(goalX,goalY,grid),0);
         int rows = grid.length;
         int cols = grid[0].length;
         PriorityQueue<Node> openList = new PriorityQueue<>();
@@ -48,7 +48,7 @@ public class AStar {
             for(Node neighbor: getNeighbors(current, rows, cols, grid))
             {
                 if(clossedList.contains((neighbor))) continue;
-                int tentGCost = gCost.get(current) + grid[neighbor.x][neighbor.y];
+                int tentGCost = gCost.get(current) + tileMovementMultiplier(neighbor.x, neighbor.y, grid);
                 if(!gCost.containsKey(neighbor) || tentGCost < gCost.get(neighbor))
                 {
                     gCost.put(neighbor, tentGCost);
@@ -63,16 +63,16 @@ public class AStar {
         return Math.abs(a.x - b.x) + Math.abs(a.y - b.y); // Manhattan distance
     }
 
-    private static double tileMovementMultiplier(int x, int y, Integer[][] grid){
+    private static int tileMovementMultiplier(int x, int y, Integer[][] grid){
         switch(grid[x][y]){
             case 1://grass
-                return 1;
+                return 10;
             case 2://water
-                return 999;
+                return 9999;
             case 3://forest
-                return 1.4;
+                return 14;
         }
-        return 2;
+        return 20;
     }
     private static List<Node> getNeighbors(Node node, int rows, int cols, Integer[][] grid) {
         List<Node> neighbors = new ArrayList<>();
