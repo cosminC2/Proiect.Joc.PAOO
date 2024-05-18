@@ -20,7 +20,7 @@ class Stats{
         spd=12;
         def=11;
         res=3;
-        mov=5;
+        mov=7;
         physDMG=false;
         isAlive=true;
     }

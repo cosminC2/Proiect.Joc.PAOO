@@ -9,17 +9,29 @@ import java.awt.image.BufferedImage;
 public class Tile
 {
     private static final int NO_TILES   = 32;
-    public static Tile[] tiles          = new Tile[NO_TILES];       /*!< Vector de referinte de tipuri de dale.*/
+    public static Tile[] tiles          = new Tile[NO_TILES*NO_TILES];       /*!< Vector de referinte de tipuri de dale.*/
+    public static Tile[] tileList     = new Tile[NO_TILES*NO_TILES];
+    static {
+            for(int x = 0;x<NO_TILES*NO_TILES;x++)
+                tileList[x] = new UniversalTile(x);
+
+    }
+    //a fost optimizat modul de randare a tile-urilor intr-un singur array de 32^2
+    //astfel, pentru fiecare tile trebuie sa fac niste calcule
+    //dar ma lasa introducerea eficienta a 32^2 tile-uri
+    //si nu trebuie sa fac efectiv 1024 clase
+    //ignorand partea in care nu au fost folosite decat vreo 60 ish de tileuri
+    //procesul de mappare a hartii nivelului a durat 4 ore, si maine trebuie predat proiectul
+    //asadar nivelele 2/3 vor folosi aceeasi harta, doar ca puse in fisiere diferite numite corespunzator
+
+
+
+
+    //incercarea mea batuta in cap de a reface sistemul de tile-uri care e si mai batut in cap
+
 
         /// De remarcat ca urmatoarele dale sunt statice si publice. Acest lucru imi permite sa le am incarcate
         /// o singura data in memorie
-    public static Tile grassTile        = new GrassTile(0);     /*!< Dala de tip iarba*/
-    public static Tile mountainTile     = new MountainTile(1);  /*!< Dala de tip munte/piatra*/
-    public static Tile waterTile        = new WaterTile(2);     /*!< Dala de tip apa*/
-    public static Tile treeTile         = new TreeTile(3);      /*!< Dala de tip copac*/
-    public static Tile soilTile         = new SoilTile(4);      /*!< Dala de tip sol/pamant*/
-    public static Tile playerLTile      = new PlayerLeftTile(5);
-    public static Tile playerRTile      = new PlayerRightTile(6);
     public static Tile cursorTile       = new CursorTile(7);
     public static Tile hoverTile        = new HoverTile(8);
     public static Tile attackTile       = new AttackTile(9);

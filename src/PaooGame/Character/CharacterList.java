@@ -1,5 +1,5 @@
 package PaooGame.Character;
-
+import javax.swing.table.DefaultTableModel;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -37,7 +37,8 @@ public class CharacterList {
             default: return null;
         }
     }
-    public void init(){
+    public void init(int lvl){
+
         add(1,2);
         add(2,1);
         add(3,2);

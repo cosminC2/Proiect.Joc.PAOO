@@ -11,9 +11,8 @@ import PaooGame.Misc.AStar;
 
 import java.awt.*;
 import java.awt.image.BufferStrategy;
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
+import java.io.*;
+
 /*! \class Game
     \brief Clasa principala a intregului proiect. Implementeaza Game - Loop (Update -> Draw)
 
@@ -111,34 +110,39 @@ public class Game implements Runnable
         Assets.Init();
     }
     private void InitData() throws FileNotFoundException {
+        int level = 1;
         cl = new CharacterList();
-        cl.init();
+        cl.init(level);
         cursor = new GameCursor();
         cm = new CharacterMenu();
         cm.init();
         gameProgressState = null;
         //String filenameArray="GridArrayLv1";
         //BufferedReader bfr = new BufferedReader(new FileReader("/res/gameData/GridArrayLv1.txt"));
-        mapTable= new Integer[][]{
-                {3, 3, 0, 0, 0, 2, 2, 2, 0, 0, 0, 3, 3},
-                {3, 0, 0, 1, 1, 2, 6, 2, 1, 1, 0, 0, 3},
-                {0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0},
-                {0, 1, 1, 9, 9, 9, 1, 1, 9, 9, 9, 1, 0},
-                {0, 1, 1, 9, 9, 9, 1, 1, 9, 9, 9, 1, 0},
-                {0, 1, 1, 9, 9, 9, 1, 1, 9, 9, 9, 1, 0},
-                {0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0},
-                {3, 0, 0, 1, 1, 2, 6, 2, 1, 1, 0, 0, 3},
-                {3, 3, 0, 0, 0, 2, 2, 2, 0, 0, 0, 3, 3},
-                {0, 4, 4, 4, 0, 3, 3, 3, 0, 7, 7, 7, 0},
-                {0, 0, 0, 4, 0, 3, 5, 3, 0, 7, 7, 7, 0},
-                {0, 0, 0, 4, 0, 3, 3, 3, 0, 7, 7, 7, 0},
-                {0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-                {0, 1, 1, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0},
-                {0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0},
-                {0, 1, 1, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0},
-                {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
-
-        };
+        mapTable= new Integer[17][13];
+        try (InputStream is = getClass().getClassLoader().getResourceAsStream("GameData/GridArrayLv"+level+".txt")) {
+            if(is !=null)
+            {
+                int jndex = 0;
+                int index = 0;
+                BufferedReader bfr = new BufferedReader(new InputStreamReader(is));
+                String line;
+                while ((line = bfr.readLine()) != null) {
+                    index = 0;
+                    String[] nums = line.split(" ");
+                    for(String num : nums){
+                        Integer temp = Integer.parseInt(num);
+                        if(index<13) {
+                            mapTable[jndex][index] = temp;
+                            index++;
+                        }
+                    }
+                    jndex++;
+                }
+            }
+        } catch (IOException e){
+            e.printStackTrace();
+        }
     }
 
     /*! \fn public void run()
@@ -289,39 +293,18 @@ public class Game implements Runnable
             // ...............
             for (int tileCoordX = 0; tileCoordX * Tile.TILE_WIDTH < wnd.GetWndWidth(); tileCoordX++) {
                 for (int tileCoordY = 0; tileCoordY * Tile.TILE_HEIGHT < wnd.GetWndHeight(); tileCoordY++) {
-                    if(isInFog(tileCoordX,tileCoordY))
+                    //if(isInFog(tileCoordX,tileCoordY))
+                    if(true)
                     {
-                        switch (mapTable[tileCoordX][tileCoordY]) {
-                            case 0:
-                                Tile.grassTile.Draw(g, tileCoordX * Tile.TILE_WIDTH, tileCoordY * Tile.TILE_HEIGHT);
-                                break;
-                            case 1:
-                            case 5:
-                            case 6:
-                            case 7:
-                            case 8:
-                            case 9:
-                                Tile.mountainTile.Draw(g, tileCoordX * Tile.TILE_WIDTH, tileCoordY * Tile.TILE_HEIGHT);
-                                break;
-                            case 4:
-                                Tile.soilTile.Draw(g, tileCoordX * Tile.TILE_WIDTH, tileCoordY * Tile.TILE_HEIGHT);
-                                break;
-                            case 3:
-                                Tile.treeTile.Draw(g, tileCoordX * Tile.TILE_WIDTH, tileCoordY * Tile.TILE_HEIGHT);
-                                break;
-                            case 2:
-                                Tile.waterTile.Draw(g, tileCoordX * Tile.TILE_WIDTH, tileCoordY * Tile.TILE_HEIGHT);
-                                break;
-                            default:
-                                System.out.println("ERROR RENDERING TILES FROM MAP");
-                        }
+                        Tile.tileList[mapTable[tileCoordX][tileCoordY]].Draw(g, tileCoordX * Tile.TILE_WIDTH, tileCoordY * Tile.TILE_HEIGHT);
+
 
 
                         if (cl.contains(tileCoordX, tileCoordY)) {
                             if (!cl.find(tileCoordX, tileCoordY).getEnemy())
-                                Tile.playerLTile.Draw(g, tileCoordX * Tile.TILE_WIDTH, tileCoordY * Tile.TILE_HEIGHT);
+                                Tile.tileList[153].Draw(g, tileCoordX * Tile.TILE_WIDTH, tileCoordY * Tile.TILE_HEIGHT);
                             else
-                                Tile.playerRTile.Draw(g, tileCoordX * Tile.TILE_WIDTH, tileCoordY * Tile.TILE_HEIGHT);
+                                Tile.tileList[154].Draw(g, tileCoordX * Tile.TILE_WIDTH, tileCoordY * Tile.TILE_HEIGHT);
 
                         }
                     }

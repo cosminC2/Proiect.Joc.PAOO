@@ -1,5 +1,7 @@
 package PaooGame.Graphics;
 
+import PaooGame.Tiles.Tile;
+
 import java.awt.image.BufferedImage;
 
 /*! \class public class Assets
@@ -29,6 +31,7 @@ public class Assets
     public static BufferedImage attack;
     public static BufferedImage mainMenu;
     public static BufferedImage gameOverScreen;
+    public static BufferedImage[] TileList = new BufferedImage[32*32];
 
     /*! \fn public static void Init()
         \brief Functia initializaza referintele catre elementele grafice utilizate.
@@ -42,6 +45,13 @@ public class Assets
         SpriteSheet sheet = new SpriteSheet(ImageLoader.LoadImage("/textures/PaooGameSpriteSheet.png"));
 
             /// Se obtin subimaginile corespunzatoare elementelor necesare.
+        for(int x=0;x<32;x++) {
+            for (int y = 0; y < 32; y++)
+            {
+                TileList[y*32+x]=sheet.crop(x,y);
+            }
+        }
+
         grass = sheet.crop(1, 2);
         soil = sheet.crop(6, 0);
         water = sheet.crop(20,9);
