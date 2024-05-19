@@ -6,6 +6,7 @@ import PaooGame.Character.CharacterMenu;
 import PaooGame.Character.GameCursor;
 import PaooGame.GameWindow.GameWindow;
 import PaooGame.Graphics.Assets;
+import PaooGame.Misc.Sound.Sound;
 import PaooGame.Tiles.Tile;
 import PaooGame.Misc.AStar;
 
@@ -71,6 +72,8 @@ public class Game implements Runnable
     private Integer[][] mapTable;
 
     private Boolean gameProgressState;
+    private Sound sound;
+    private Sound soundEffects;
     private Tile tile; /*!< variabila membra temporara. Este folosita in aceasta etapa doar pentru a desena ceva pe ecran.*/
 
     /*! \fn public Game(String title, int width, int height)
@@ -117,9 +120,10 @@ public class Game implements Runnable
         cm = new CharacterMenu();
         cm.init();
         gameProgressState = null;
-        //String filenameArray="GridArrayLv1";
-        //BufferedReader bfr = new BufferedReader(new FileReader("/res/gameData/GridArrayLv1.txt"));
         mapTable= new Integer[17][13];
+        sound = new Sound();
+        soundEffects = new Sound();
+        playMusic(0);
         try (InputStream is = getClass().getClassLoader().getResourceAsStream("GameData/GridArrayLv"+level+".txt")) {
             if(is !=null)
             {
@@ -249,13 +253,34 @@ public class Game implements Runnable
      */
     private void Update()
     {
+        gameProgressState = updateGameState();
         if(gameProgressState==null) {
             UpdateCursorMovement();
             PerformAction();
+            if(cl.lastEnemy()&&cl.getLastEnemy()!=null) cl.setLastEnemy(true);
+            try {
+                if (cl.getLastEnemy()) {
+                    cl.setLastEnemy(null);
+                    stopMusic();
+                    playMusic(1);
+                }
+            }
+            catch(NullPointerException e)
+            {
+
+            }
         }
         else {
-
+            if(gameProgressState && (sound.getIndex()!=9))
+            {
+                stopMusic();
+                playMusic(9);
+                //WIN
+            } else{
+                //LOSE
+            }
         }
+
 
     }
 
@@ -291,29 +316,84 @@ public class Game implements Runnable
 
             /// operatie de desenare
             // ...............
+
+        if(gameProgressState==null) {
             for (int tileCoordX = 0; tileCoordX * Tile.TILE_WIDTH < wnd.GetWndWidth(); tileCoordX++) {
                 for (int tileCoordY = 0; tileCoordY * Tile.TILE_HEIGHT < wnd.GetWndHeight(); tileCoordY++) {
-                    //if(isInFog(tileCoordX,tileCoordY))
-                    if(true)
+                    if (isInFog(tileCoordX, tileCoordY))
+                    //if(true)
                     {
                         Tile.tileList[mapTable[tileCoordX][tileCoordY]].Draw(g, tileCoordX * Tile.TILE_WIDTH, tileCoordY * Tile.TILE_HEIGHT);
 
 
-
                         if (cl.contains(tileCoordX, tileCoordY)) {
-                            if (!cl.find(tileCoordX, tileCoordY).getEnemy())
-                                Tile.tileList[153].Draw(g, tileCoordX * Tile.TILE_WIDTH, tileCoordY * Tile.TILE_HEIGHT);
-                            else
-                                Tile.tileList[154].Draw(g, tileCoordX * Tile.TILE_WIDTH, tileCoordY * Tile.TILE_HEIGHT);
+                            if (cl.find(tileCoordX, tileCoordY).getEnemy() == false) {
+                                switch (cl.find(tileCoordX, tileCoordY).getClasa()) {
+                                    case "Lord":
+                                        Tile.tileList[155].Draw(g, tileCoordX * Tile.TILE_WIDTH, tileCoordY * Tile.TILE_HEIGHT);
+                                        break;
+                                    case "S-Paladin":
+                                    case "L-Paladin":
+                                    case "A-Paladin":
+                                        Tile.tileList[153].Draw(g, tileCoordX * Tile.TILE_WIDTH, tileCoordY * Tile.TILE_HEIGHT);
+                                        break;
+                                    case "S-Cavalier":
+                                    case "L-Cavalier":
+                                    case "A-Cavalier":
+                                        Tile.tileList[93].Draw(g, tileCoordX * Tile.TILE_WIDTH, tileCoordY * Tile.TILE_HEIGHT);
+                                        break;
+                                    case "S-Knight":
+                                    case "L-Knight":
+                                    case "A-Knight":
+                                        Tile.tileList[61].Draw(g, tileCoordX * Tile.TILE_WIDTH, tileCoordY * Tile.TILE_HEIGHT);
+                                        break;
+                                    case "S-General":
+                                    case "L-General":
+                                    case "A-General":
+                                        Tile.tileList[29].Draw(g, tileCoordX * Tile.TILE_WIDTH, tileCoordY * Tile.TILE_HEIGHT);
+                                        break;
+                                    case "Fighter":
+                                        Tile.tileList[219].Draw(g, tileCoordX * Tile.TILE_WIDTH, tileCoordY * Tile.TILE_HEIGHT);
+                                        break;
+                                    case "Mage":
+                                        Tile.tileList[185].Draw(g, tileCoordX * Tile.TILE_WIDTH, tileCoordY * Tile.TILE_HEIGHT);
+                                        break;
+                                    case "Rogue":
+                                        Tile.tileList[186].Draw(g, tileCoordX * Tile.TILE_WIDTH, tileCoordY * Tile.TILE_HEIGHT);
+                                        break;
+                                }
+                            } else {
+                                switch (cl.find(tileCoordX, tileCoordY).getClasa()) {
+                                    case "S-Paladin":
+                                    case "L-Paladin":
+                                    case "A-Paladin":
+                                        Tile.tileList[154].Draw(g, tileCoordX * Tile.TILE_WIDTH, tileCoordY * Tile.TILE_HEIGHT);
+                                        break;
+                                    case "S-Cavalier":
+                                    case "L-Cavalier":
+                                    case "A-Cavalier":
+                                        Tile.tileList[94].Draw(g, tileCoordX * Tile.TILE_WIDTH, tileCoordY * Tile.TILE_HEIGHT);
+                                        break;
+                                    case "S-Knight":
+                                    case "L-Knight":
+                                    case "A-Knight":
+                                        Tile.tileList[62].Draw(g, tileCoordX * Tile.TILE_WIDTH, tileCoordY * Tile.TILE_HEIGHT);
+                                        break;
+                                    case "S-General":
+                                    case "L-General":
+                                    case "A-General":
+                                        Tile.tileList[30].Draw(g, tileCoordX * Tile.TILE_WIDTH, tileCoordY * Tile.TILE_HEIGHT);
+                                        break;
+                                }
+                            }
 
                         }
                     }
-                    if(cursor.getSelectedChar()!=null&&cursor.getSelectedChar().getMoving()){
-                        int range = AStar.aStar(mapTable,cursor.getSelectedChar().getX(),cursor.getSelectedChar().getY(),tileCoordX,tileCoordY);
-                        if(range<=cursor.getSelectedChar().getStat("MOV")*10)
-                        {
+                    if (cursor.getSelectedChar() != null && cursor.getSelectedChar().getMoving()) {
+                        int range = AStar.aStar(mapTable, cursor.getSelectedChar().getX(), cursor.getSelectedChar().getY(), tileCoordX, tileCoordY);
+                        if (range <= cursor.getSelectedChar().getStat("MOV") * 10) {
                             Tile.hoverTile.Draw(g, tileCoordX * Tile.TILE_WIDTH, tileCoordY * Tile.TILE_HEIGHT);
-                        } else if (range<=(cursor.getSelectedChar().getStat("MOV")+1)*10) {
+                        } else if (range <= (cursor.getSelectedChar().getStat("MOV") + 1) * 10) {
                             Tile.attackTile.Draw(g, tileCoordX * Tile.TILE_WIDTH, tileCoordY * Tile.TILE_HEIGHT);
                         }
                     }
@@ -340,6 +420,16 @@ public class Game implements Runnable
             //g.drawRect(cursor.getX() * Tile.TILE_WIDTH, cursor.getY() * Tile.TILE_HEIGHT, Tile.TILE_WIDTH, Tile.TILE_HEIGHT);
             if (!(cursor.getSelectedChar() != null && cursor.getSelectedChar().getDisplayStats()))
                 Tile.cursorTile.Draw(g, cursor.getX() * Tile.TILE_WIDTH, cursor.getY() * Tile.TILE_HEIGHT);
+        }else{
+            if(gameProgressState)
+            {
+                //win
+                g.drawImage(Assets.gameOverScreen,0,0, wnd.GetWndWidth(),wnd.GetWndHeight(),null);
+
+            }else {
+                //lose
+            }
+        }
 
             // end operatie de desenare
             /// Se afiseaza pe ecran
@@ -396,18 +486,22 @@ public class Game implements Runnable
                 if (cursor.getY() < (wnd.GetWndHeight()-1) / Tile.TILE_HEIGHT)
                     cursor.setY(cursor.getY() + 1);
                 System.out.println("DOWN");
+                playEffect(8);
             } else if (wnd.kh.leftPressed == true) {
                 if (cursor.getX() > 0)
                     cursor.setX(cursor.getX() - 1);
                 System.out.println("LEFT");
+                playEffect(8);
             } else if (wnd.kh.upPressed == true) {
                 if (cursor.getY() > 0)
                     cursor.setY(cursor.getY() - 1);
                 System.out.println("UP");
+                playEffect(8);
             } else if (wnd.kh.rightPressed == true) {
                 if (cursor.getX() < wnd.GetWndWidth() / Tile.TILE_WIDTH - 1)
                     cursor.setX(cursor.getX() + 1);
                 System.out.println("RIGHT");
+                playEffect(8);
             }
             wnd.getWndFrame().requestFocusInWindow();
         }
@@ -417,6 +511,7 @@ public class Game implements Runnable
         {
             wnd.kh.spacePressed = false;
             System.out.println("SPACE");
+            playEffect(8);
             //this is retarded, but lets me wiggle with menu toggle later on
             if(cl.contains(cursor.getX(), cursor.getY()))
             {
@@ -457,10 +552,11 @@ public class Game implements Runnable
 
         } else if(cm.getOpen() == true) {//one of the two (soon three) options has been selected: move and wait
             if (wnd.kh.zPressed == true) {
-                wnd.kh.zPressed = false;
                 System.out.println("Z");
+                playEffect(8);
                 if(cm.getOpen())//if menu is open
                 {
+                    wnd.kh.zPressed = false;
                     if(cursor.getSelectedChar()!=null&& !cursor.getSelectedChar().getEnemy())
                     {
                         if(cursor.getSelectedChar().getCanMove())
@@ -472,19 +568,24 @@ public class Game implements Runnable
 
                 }
             } else if (wnd.kh.cPressed) {
-                wnd.kh.cPressed = false;
                 System.out.println("C");
+                playEffect(8);
                 //ATTACK
                 if(CheckAdjacentEnemies()!="NONE"&&cursor.getSelectedChar().getCanAttak()&& !cursor.getSelectedChar().getEnemy())
                 {
                     //adjacent enemies exist
                     //closing menu to start combat
+                    wnd.kh.cPressed = false;
                     cm.setOpen(true);
                     cursor.getSelectedChar().enterCombat(cl.getAdjacentChar(CheckAdjacentEnemies(),cursor));
-                    if(cl.getAdjacentChar(CheckAdjacentEnemies(),cursor).isAlive()==false)
-                        cl.charList.remove(cl.getAdjacentChar(CheckAdjacentEnemies(),cursor));
-                    else if(cursor.getSelectedChar().isAlive()==false)
+                    if(cl.getAdjacentChar(CheckAdjacentEnemies(),cursor).isAlive()==false) {
+                        cl.charList.remove(cl.getAdjacentChar(CheckAdjacentEnemies(), cursor));
+                        playEffect(4);
+                    }
+                    else if(cursor.getSelectedChar().isAlive()==false) {
                         cl.charList.remove(cursor.getSelectedChar());
+                        playEffect(3);
+                    }
                     System.out.println(cursor.getSelectedChar().getStat("HP"));
                     cm.setOpen(false);
                     cursor.setSelectedChar(null);
@@ -492,6 +593,7 @@ public class Game implements Runnable
             } else if(wnd.kh.xPressed == true){
                 wnd.kh.xPressed = false;
                 System.out.println("X");
+                playEffect(8);
                 if(cursor.getSelectedChar().getDisplayStats())
                 {
                     cursor.getSelectedChar().setDisplayStats(false);
@@ -501,10 +603,14 @@ public class Game implements Runnable
                 {
                     cursor.getSelectedChar().setDisplayStats(true);
                 }
-            } else if(wnd.kh.enterPressed == true)
-            {
-                wnd.kh.enterPressed=false;
+            }
+        }
+        if(wnd.kh.enterPressed == true)
+        {
+            wnd.kh.enterPressed=false;
+            if((cursor.getSelectedChar()!=null && cursor.getSelectedChar().getMoving()==false)||cm.getOpen()==false) {
                 cl.endTurn();
+                playEffect(5);
                 System.out.println("TURN ENDED");
             }
         }
@@ -553,5 +659,22 @@ public class Game implements Runnable
         return ok;
     }
 
+    public void playMusic(Integer i){
+        sound.setFile(i);
+        sound.play();
+        sound.loop();
+    }
+    public void stopMusic(){
+        sound.stop();
+    }
+    public void playEffect(Integer i){
+        soundEffects.setFile(i);
+        soundEffects.play();
+    }
+
+    public int fn(int x, int y)
+    {
+        return (x*32)+y;
+    }
 }
 

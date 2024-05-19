@@ -1,12 +1,13 @@
 package PaooGame.Character;
-import javax.swing.table.DefaultTableModel;
+import java.io.File;
+import java.nio.channels.AsynchronousServerSocketChannel;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-
+import java.sql.*;
 public class CharacterList {
     public List<Character> charList;
+    Boolean lastEnemy = false;
     public CharacterList(){
 
         charList= new ArrayList<>();
@@ -37,32 +38,49 @@ public class CharacterList {
             default: return null;
         }
     }
+    public Boolean getLastEnemy(){return lastEnemy;}
+    public void setLastEnemy(Boolean val){lastEnemy = val;}
     public void init(int lvl){
+        Connection c = null;
+        Statement stmt = null;
+        try {
+            Class.forName("org.sqlite.JDBC");
+            String projectRoot = System.getProperty("user.dir");
+            String path = projectRoot + File.separator + "res" + File.separator + "gameData" + File.separator + "InitDataLv"+lvl+".db";
+            c = DriverManager.getConnection("jdbc:sqlite:"+path);
+            c.setAutoCommit(false);
+            String sql = "SELECT * FROM Stats";
+            stmt = c.createStatement();
+            ResultSet rs = stmt.executeQuery(sql);
+            while( rs.next())
+            {
+                int x = rs.getInt("CoordX");
+                int y = rs.getInt("CoordY");
+                String name = rs.getString("Name");
+                String clasa = rs.getString("Class");
+                int hp = rs.getInt("HP");
+                int str = rs.getInt("Str");
+                int spd = rs.getInt("Spd");
+                int def = rs.getInt("Def");
+                int res = rs.getInt("Res");
+                int mov = rs.getInt("Mov");
+                Boolean pdmg = false;
+                if(rs.getInt("physDMG")==1) pdmg = true;
+                Boolean hostile = false;
+                if(rs.getInt("enemy")==1) hostile = true;
+                add(x,y, hostile, name, clasa, hp, str, spd, def, res, mov, pdmg);
+            }
 
-        add(1,2);
-        add(2,1);
-        add(3,2);
-        add(2,3);
-        add(4,3);
-        add(3,4);
-        addEnemy(12,7);
-        addEnemy(8,8);
-        addEnemy(3,5);
-        addEnemy(7,4);
-        addEnemy(8,9);
-        addEnemy(3,7);
-        charList.get(4).spd-=6;
+            c.close();
+        }catch (Exception e){
+            System.err.println( e.getClass().getName() + ": " + e.getMessage());
+            System.exit(0);
+        }
+
     }
 
-    public void add(Integer x, Integer y){
-
-        if(!contains(x,y)) charList.add(new Character(x, y));
-    }
-    public void addEnemy(Integer x, Integer y){
-
-        if(!contains(x,y))
-            charList.add(new Character(x, y, true));
-        find(x,y).physDMG=false;
+    public void add(Integer x, Integer y, Boolean hostile, String name, String clasa, int hp, int str,int spd, int def, int res, int mov, Boolean pdmg){
+        if(!contains(x,y)) charList.add(new Character(x, y, hostile, name, clasa, hp, str, spd, def, res, mov, pdmg));
     }
     public void endTurn(){
         for(Character item: charList)
@@ -87,5 +105,14 @@ public class CharacterList {
                 return true;
         }
         return false;
+    }
+
+    public Boolean lastEnemy(){
+        int counter = 0;
+        for(Character unit:charList){
+            if(unit.getEnemy())
+                counter++;
+        }
+        return counter == 1;
     }
 }

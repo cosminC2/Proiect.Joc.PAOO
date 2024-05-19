@@ -51,21 +51,6 @@ public class Assets
                 TileList[y*32+x]=sheet.crop(x,y);
             }
         }
-
-        grass = sheet.crop(1, 2);
-        soil = sheet.crop(6, 0);
-        water = sheet.crop(20,9);
-        mountain = sheet.crop(12, 21);
-        townGrass = sheet.crop(0, 1);
-        townGrassDestroyed = sheet.crop(1, 1);
-        townSoil = sheet.crop(2, 1);
-        tree = sheet.crop(17, 26);
-        playerLeft = sheet.crop(25, 4);
-        playerRight = sheet.crop(26, 4);
-        rockUp = sheet.crop(2, 2);
-        rockDown = sheet.crop(3, 2);
-        rockLeft = sheet.crop(0, 3);
-        rockRight = sheet.crop(1, 3);
         cursor = sheet.crop(7,1);
         hover = sheet.crop(15,1);
         attack = sheet.crop(16,1);

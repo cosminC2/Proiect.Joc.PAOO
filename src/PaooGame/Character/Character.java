@@ -28,6 +28,7 @@ class Stats{
     public Stats(String name, String Class, int hp, int str,int spd, int def, int res, int mov, Boolean pdmg){
         this.name=name;
         this.clasa=Class;
+        this.maxhp=hp;
         this.hp=hp;
         this.str=str;
         this.spd=spd;
@@ -36,14 +37,13 @@ class Stats{
         this.mov=mov;
         physDMG=pdmg;
     }
-//=======
-//>>>>>>> 1d4d000 (git commit)
     public void takeDamage(Stats s){
         Integer dmgTaken;
         if(this.isAlive&&s.isAlive) {
             if (s.physDMG) {
                 dmgTaken = s.str - def;
             } else dmgTaken = s.str - res;
+            if(dmgTaken<0)dmgTaken=0;
             hp = hp - dmgTaken;
             if (hp <= 0) {
                 hp = 0;
@@ -65,6 +65,13 @@ class Stats{
             default: return -99;
         }
     }
+    public String getName(){return name;}
+
+    public String getClasa() {return clasa;}
+
+    public Boolean getPhysDMG() {
+        return physDMG;
+    }
 }
 public class Character extends Stats{
     Integer coordX;
@@ -77,19 +84,7 @@ public class Character extends Stats{
     Boolean displayStats;
     Image img;
 
-    public Character(Integer x, Integer y){
-        super();
-        coordX = x;
-        coordY = y;
-        canMove = true;
-        canAttak = true;
-        isMoving = false;
-        enemy = false;
-        inCombat=false;
-        isAlive=true;
-        displayStats=false;
-        img= ImageLoader.LoadImage("/textures/PaooPlaceholderCharSprite.png");
-    }
+
     public Character(Integer x, Integer y, Boolean hostile){
         super();
         coordX = x;
@@ -98,14 +93,30 @@ public class Character extends Stats{
         canMove = true;
         canAttak = true;
         isMoving = false;
+        inCombat=false;
         physDMG=false;
         isAlive=true;
         displayStats=false;
         if(enemy) {
-            super.name = "Bad guy";
+            super.name = "Enemy";
             super.clasa = "Bad Paladin";
-            img = ImageLoader.LoadImage("/textures/PaooPlaceholderEnemySprite.png");
+            img = ImageLoader.LoadImage("/textures/Paoo"+name+"Sprite.png");
         }
+    }
+    public Character(Integer x, Integer y, Boolean hostile, String name, String clasa, int hp, int str,int spd, int def, int res, int mov, Boolean pdmg)
+    {
+        super(name, clasa, hp, str,spd, def, res, mov, pdmg);
+        coordX = x;
+        coordY = y;
+        enemy = hostile;
+        canMove = true;
+        canAttak = true;
+        isMoving = false;
+        inCombat=false;
+        physDMG=false;
+        isAlive=true;
+        displayStats=false;
+        img= ImageLoader.LoadImage("/textures/Paoo"+name+"Sprite.png");
     }
     public void set(Integer x, Integer y){
         coordX = x;
@@ -167,7 +178,7 @@ public class Character extends Stats{
         g.setFont(new Font("Serif", Font.BOLD, 26));
         Image imgBase = ImageLoader.LoadImage("/textures/PaooHoverMenuBase.png");
         g.drawImage(imgBase,16,wnd.GetWndHeight()-96,imgBase.getWidth(null)*2,imgBase.getHeight(null)*2,null);
-        g.drawImage(img,120,wnd.GetWndHeight()-88,null);
+        g.drawImage(img,(int)(wnd.GetWndWidth()*0.132),(int)(wnd.GetWndHeight()*0.8625),null);
         String health = hp+"";
         g.drawString(health,78, wnd.GetWndHeight()-24);
         g.drawString(name,26, wnd.GetWndHeight()-56);}
@@ -197,7 +208,7 @@ public class Character extends Stats{
             g.drawString(clasa,(int) (0.11*wnd.GetWndWidth()),(int) (0.73*wnd.GetWndHeight()));
             g.setColor(Color.black);
             g.drawString(name,(int) (0.17*wnd.GetWndWidth()),(int) (0.58*wnd.GetWndHeight()));
-            g.drawImage(img,(int) (0.08*wnd.GetWndWidth()),(int) (0.1225*wnd.GetWndHeight()),3*img.getWidth(null),3*img.getHeight(null),null);
+            g.drawImage(img,(int) (0.067*wnd.GetWndWidth()),(int) (0.129*wnd.GetWndHeight()),(int)(2.84*img.getWidth(null)),(int)(2.9*img.getHeight(null)),null);
         }
         else {
             System.out.println("STATS MENU IS CLOSED");
