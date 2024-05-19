@@ -257,6 +257,7 @@ public class Game implements Runnable
         if(gameProgressState==null) {
             UpdateCursorMovement();
             PerformAction();
+            PerformSaveAction();
             if(cl.lastEnemy()&&cl.getLastEnemy()!=null) cl.setLastEnemy(true);
             try {
                 if (cl.getLastEnemy()) {
@@ -632,6 +633,25 @@ public class Game implements Runnable
         return null;
     }
 
+    public void PerformSaveAction(){
+        if(wnd.kh.gPressed==true)
+        {
+            wnd.kh.gPressed=false;
+            System.out.println("G");
+            //quick save
+            //parcurge cl
+            //overwrite data din save file-ul existent
+        }
+        if(wnd.kh.hPressed==true)
+        {
+            wnd.kh.hPressed=false;
+            System.out.println("H");
+            //quick load
+            //parcurge save file-ul
+            //adauga elementele intr-un characterlist proxy
+            //sterge vechiul continut din cl, pune peste el cel din proxy
+        }
+    }
     public boolean CheckMovement(GameCursor cursor){
         int startX= cursor.getSelectedChar().getX();
         int startY= cursor.getSelectedChar().getY();

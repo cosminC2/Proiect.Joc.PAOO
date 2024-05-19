@@ -7,6 +7,7 @@ public class KeyHandler implements KeyListener{
     public Boolean upPressed, downPressed, leftPressed, rightPressed;
     public Boolean spacePressed, enterPressed;
     public Boolean zPressed, xPressed, cPressed;
+    public Boolean gPressed, hPressed;
     public KeyHandler(){
         upPressed=false;
         downPressed=false;
@@ -17,6 +18,8 @@ public class KeyHandler implements KeyListener{
         zPressed = false;
         xPressed = false;
         cPressed = false;
+        gPressed = false;
+        hPressed = false;
     }
     @Override
     public void keyTyped(KeyEvent e) {
@@ -37,24 +40,41 @@ public class KeyHandler implements KeyListener{
     }
     @Override
     public void keyReleased(KeyEvent e){
-        int keycode = e.getKeyCode();
-        if(keycode==KeyEvent.VK_W)
-            upPressed = false;
-        else if(keycode==KeyEvent.VK_A)
-            leftPressed = false;
-        else if(keycode== KeyEvent.VK_S)
-            downPressed = false;
-        else if(keycode == KeyEvent.VK_D)
-            rightPressed = false;
-        else if(keycode == KeyEvent.VK_SPACE)
-            spacePressed = true;
-        else if(keycode == KeyEvent.VK_ENTER)
-            enterPressed = true;
-        else if(keycode == KeyEvent.VK_Z)
-            zPressed = true;
-        else if(keycode == KeyEvent.VK_X)
-            xPressed = true;
-        else if(keycode == KeyEvent.VK_C)
-            cPressed = true;
+        switch(e.getKeyCode())
+        {
+            case KeyEvent.VK_W:
+                upPressed = false;
+                break;
+            case KeyEvent.VK_A:
+                leftPressed = false;
+                break;
+            case KeyEvent.VK_S:
+                downPressed = false;
+                break;
+            case KeyEvent.VK_D:
+                rightPressed = false;
+                break;
+            case KeyEvent.VK_SPACE:
+                spacePressed = true;
+                break;
+            case KeyEvent.VK_ENTER:
+                enterPressed = true;
+                break;
+            case KeyEvent.VK_Z:
+                zPressed = true;
+                break;
+            case KeyEvent.VK_X:
+                xPressed = true;
+                break;
+            case KeyEvent.VK_C:
+                cPressed = true;
+                break;
+            case KeyEvent.VK_G:
+                gPressed = true;
+                break;
+            case KeyEvent.VK_H:
+                hPressed = true;
+                break;
+        }
     }
 }
