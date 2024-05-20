@@ -4,6 +4,10 @@ import PaooGame.GameWindow.GameWindow;
 import PaooGame.Graphics.ImageLoader;
 
 import java.awt.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 class Stats{
     protected String name;
@@ -24,6 +28,12 @@ class Stats{
         physDMG=false;
         isAlive=true;
     }
+    public static Map<String, List<String>> WeaponType = Map.ofEntries(
+            Map.entry("A", List.of("A-Paladin", "A-Cavalier", "A-Knight", "A-General", "Fighter")),
+            Map.entry("L", List.of("L-Paladin", " L-Cavalier", " L-Knight", " L-General", "Solider")),
+            Map.entry("S", List.of("S-Paladin", " S-Cavalier", " S-Knight", " S-General", "Lord", "Rogue")),
+            Map.entry("N", List.of("Mage", " Monster", " Dragon"))
+    );
 //<<<<<<< HEAD
     public Stats(String name, String Class, int hp, int str,int spd, int def, int res, int mov, Boolean pdmg){
         this.name=name;
@@ -41,7 +51,7 @@ class Stats{
         Integer dmgTaken;
         if(this.isAlive&&s.isAlive) {
             if (s.physDMG) {
-                dmgTaken = s.str - def;
+                dmgTaken = (int)(s.str * WeaponTriangleMultiplier(s)) - def;
             } else dmgTaken = s.str - res;
             if(dmgTaken<0)dmgTaken=0;
             hp = hp - dmgTaken;
@@ -53,6 +63,39 @@ class Stats{
         }
         else System.out.println("ONE OF THE PARTIES IS DEAD");
     }
+    public double WeaponTriangleMultiplier(Stats s){
+        //sincer, aici puteam adauga in Stats inca o variabila pentru tipul de arma
+        //but I am so deep in this incat nu am chef, asadar voi face un switch de toti dracii in loc
+        //nevermind am facut un Map cu ^^^
+        String enemyWeap = null;
+        String thisWeap = null;
+        for(Map.Entry<String, List<String>> entry : WeaponType.entrySet())
+        {
+            if(entry.getValue().contains(s.clasa))
+                enemyWeap=entry.getKey();
+            if(entry.getValue().contains(this.clasa))
+                thisWeap= entry.getKey();
+        }
+        if(Objects.equals(enemyWeap, thisWeap)) return 1;//daca ambele personaje au acelasi tip de arma, multiplierul este 1
+        if(Objects.equals(enemyWeap, "N") || Objects.equals(thisWeap, "N")) return 1;//tipurile de arma neutre au multiplier nativ de 1
+        switch(enemyWeap+thisWeap)
+        {
+            case "SA":
+            case "LS":
+            case "AL":
+                //au fost considerate cazurile avantajoase
+                //A = axe (topor)
+                //S = sword (sabie)
+                //L = lance (lance)
+                //topoarele bat lancile (A > L)
+                //sabiile bat topoarele ( S > A)
+                //lancile bat sabiile ( T > S)
+                return 1.3;
+            default:
+                return 0.7;
+        }
+    }
+
     public Integer getStat(String index){
         switch(index){
             case "HP": return hp;
@@ -113,7 +156,7 @@ public class Character extends Stats{
         canAttak = true;
         isMoving = false;
         inCombat=false;
-        physDMG=false;
+        physDMG=pdmg;
         isAlive=true;
         displayStats=false;
         img= ImageLoader.LoadImage("/textures/Paoo"+name+"Sprite.png");

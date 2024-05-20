@@ -74,6 +74,7 @@ public class Game implements Runnable
     private Boolean gameProgressState;
     private Sound sound;
     private Sound soundEffects;
+    private int level;
     private Tile tile; /*!< variabila membra temporara. Este folosita in aceasta etapa doar pentru a desena ceva pe ecran.*/
 
     /*! \fn public Game(String title, int width, int height)
@@ -86,12 +87,13 @@ public class Game implements Runnable
         \param width Latimea ferestrei in pixeli.
         \param height Inaltimea ferestrei in pixeli.
      */
-    public Game(String title, int width, int height)
+    public Game(String title, int width, int height, int lvl)
     {
             /// Obiectul GameWindow este creat insa fereastra nu este construita
             /// Acest lucru va fi realizat in metoda init() prin apelul
             /// functiei BuildGameWindow();
         wnd = new GameWindow(title, width, height);
+        level = lvl;
             /// Resetarea flagului runState ce indica starea firului de executie (started/stoped)
         runState = false;
     }
@@ -113,7 +115,6 @@ public class Game implements Runnable
         Assets.Init();
     }
     private void InitData() throws FileNotFoundException {
-        int level = 1;
         cl = new CharacterList();
         cl.init(level);
         cursor = new GameCursor();
@@ -123,6 +124,7 @@ public class Game implements Runnable
         mapTable= new Integer[17][13];
         sound = new Sound();
         soundEffects = new Sound();
+        cl.saveData(level);
         playMusic(0);
         try (InputStream is = getClass().getClassLoader().getResourceAsStream("GameData/GridArrayLv"+level+".txt")) {
             if(is !=null)
@@ -272,13 +274,17 @@ public class Game implements Runnable
             }
         }
         else {
-            if(gameProgressState && (sound.getIndex()!=9))
+            if(gameProgressState)
             {
-                stopMusic();
-                playMusic(9);
+
                 //WIN
             } else{
                 //LOSE
+                if(sound.getIndex()!=9) {
+                    //conditie pentru a pune muzica doar o singura data
+                    stopMusic();
+                    playMusic(9);
+                }
             }
         }
 
@@ -321,12 +327,10 @@ public class Game implements Runnable
         if(gameProgressState==null) {
             for (int tileCoordX = 0; tileCoordX * Tile.TILE_WIDTH < wnd.GetWndWidth(); tileCoordX++) {
                 for (int tileCoordY = 0; tileCoordY * Tile.TILE_HEIGHT < wnd.GetWndHeight(); tileCoordY++) {
+                    Tile.tileList[mapTable[tileCoordX][tileCoordY]].Draw(g, tileCoordX * Tile.TILE_WIDTH, tileCoordY * Tile.TILE_HEIGHT);
                     if (isInFog(tileCoordX, tileCoordY))
                     //if(true)
                     {
-                        Tile.tileList[mapTable[tileCoordX][tileCoordY]].Draw(g, tileCoordX * Tile.TILE_WIDTH, tileCoordY * Tile.TILE_HEIGHT);
-
-
                         if (cl.contains(tileCoordX, tileCoordY)) {
                             if (cl.find(tileCoordX, tileCoordY).getEnemy() == false) {
                                 switch (cl.find(tileCoordX, tileCoordY).getClasa()) {
@@ -390,8 +394,10 @@ public class Game implements Runnable
 
                         }
                     }
+                    else
+                        Tile.tileList[190].Draw(g, tileCoordX * Tile.TILE_WIDTH, tileCoordY * Tile.TILE_HEIGHT);
                     if (cursor.getSelectedChar() != null && cursor.getSelectedChar().getMoving()) {
-                        int range = AStar.aStar(mapTable, cursor.getSelectedChar().getX(), cursor.getSelectedChar().getY(), tileCoordX, tileCoordY);
+                        int range = AStar.aStar(mapTable, cursor.getSelectedChar().getX(), cursor.getSelectedChar().getY(), tileCoordX, tileCoordY, cl);
                         if (range <= cursor.getSelectedChar().getStat("MOV") * 10) {
                             Tile.hoverTile.Draw(g, tileCoordX * Tile.TILE_WIDTH, tileCoordY * Tile.TILE_HEIGHT);
                         } else if (range <= (cursor.getSelectedChar().getStat("MOV") + 1) * 10) {
@@ -425,10 +431,18 @@ public class Game implements Runnable
             if(gameProgressState)
             {
                 //win
-                g.drawImage(Assets.gameOverScreen,0,0, wnd.GetWndWidth(),wnd.GetWndHeight(),null);
+                stopMusic();
+                level++;
+                if(level>3)StopGame();
+                try {
+                    InitData();
+                } catch (FileNotFoundException e) {
+                    throw new RuntimeException(e);
+                }
 
             }else {
                 //lose
+                g.drawImage(Assets.gameOverScreen,0,0, wnd.GetWndWidth(),wnd.GetWndHeight(),null);
             }
         }
 
@@ -530,7 +544,7 @@ public class Game implements Runnable
             if(cursor.getSelectedChar()!=null)
             {
                 if(cursor.getSelectedChar().getMoving()==true) {
-                    System.out.println(AStar.aStar(mapTable,cursor.getSelectedChar().getX(),cursor.getSelectedChar().getY(), cursor.getX(),cursor.getY()));
+                    System.out.println(AStar.aStar(mapTable,cursor.getSelectedChar().getX(),cursor.getSelectedChar().getY(), cursor.getX(),cursor.getY(), cl));
                     if (CheckMovement(cursor)) {
                         cursor.getSelectedChar().set(cursor.getX(), cursor.getY());
                         cursor.getSelectedChar().setMoving(false);
@@ -571,25 +585,26 @@ public class Game implements Runnable
             } else if (wnd.kh.cPressed) {
                 System.out.println("C");
                 playEffect(8);
+                wnd.kh.cPressed = false;
                 //ATTACK
-                if(CheckAdjacentEnemies()!="NONE"&&cursor.getSelectedChar().getCanAttak()&& !cursor.getSelectedChar().getEnemy())
+                if(CheckAdjacentEnemies()!="NONE"&&cursor.getSelectedChar().getCanAttak())
                 {
                     //adjacent enemies exist
                     //closing menu to start combat
-                    wnd.kh.cPressed = false;
-                    cm.setOpen(true);
-                    cursor.getSelectedChar().enterCombat(cl.getAdjacentChar(CheckAdjacentEnemies(),cursor));
-                    if(cl.getAdjacentChar(CheckAdjacentEnemies(),cursor).isAlive()==false) {
-                        cl.charList.remove(cl.getAdjacentChar(CheckAdjacentEnemies(), cursor));
-                        playEffect(4);
+                    if(!cursor.getSelectedChar().getEnemy()) {
+                        cm.setOpen(true);
+                        cursor.getSelectedChar().enterCombat(cl.getAdjacentChar(CheckAdjacentEnemies(), cursor));
+                        if (cl.getAdjacentChar(CheckAdjacentEnemies(), cursor).isAlive() == false) {
+                            cl.charList.remove(cl.getAdjacentChar(CheckAdjacentEnemies(), cursor));
+                            playEffect(4);
+                        } else if (cursor.getSelectedChar().isAlive() == false) {
+                            cl.charList.remove(cursor.getSelectedChar());
+                            playEffect(3);
+                        }
+                        System.out.println(cursor.getSelectedChar().getStat("HP"));
+                        cm.setOpen(false);
+                        cursor.setSelectedChar(null);
                     }
-                    else if(cursor.getSelectedChar().isAlive()==false) {
-                        cl.charList.remove(cursor.getSelectedChar());
-                        playEffect(3);
-                    }
-                    System.out.println(cursor.getSelectedChar().getStat("HP"));
-                    cm.setOpen(false);
-                    cursor.setSelectedChar(null);
                 }
             } else if(wnd.kh.xPressed == true){
                 wnd.kh.xPressed = false;
@@ -618,13 +633,13 @@ public class Game implements Runnable
     }
 
     public Boolean updateGameState(){
-        if(cl.hasEnemy()==false){
+        if(!cl.hasEnemy()){
             //nu mai sunt inamici pe harta - true
             return true;
         }
-        if(cl.hasHeroes()==false){
+        if(!cl.hasHeroes()||cl.isHeroDead()){
             //nu mai sunt eroi pe harta - false
-            //TODO: adaugat special conditie pentru personaj principal
+            //personajul principal a murit - false
             return false;
         }
         //daca conditia de esec, dar nici conditia de castig nu sunt indeplinite
@@ -638,6 +653,7 @@ public class Game implements Runnable
         {
             wnd.kh.gPressed=false;
             System.out.println("G");
+            cl.saveData(level);
             //quick save
             //parcurge cl
             //overwrite data din save file-ul existent
@@ -646,6 +662,7 @@ public class Game implements Runnable
         {
             wnd.kh.hPressed=false;
             System.out.println("H");
+            cl.loadData(level);
             //quick load
             //parcurge save file-ul
             //adauga elementele intr-un characterlist proxy
@@ -657,7 +674,7 @@ public class Game implements Runnable
         int startY= cursor.getSelectedChar().getY();
         int endX= cursor.getX();
         int endY= cursor.getY();
-        if(AStar.aStar(mapTable,startX,startY,endX,endY) <= (cursor.getSelectedChar().getStat("MOV")*10))
+        if(AStar.aStar(mapTable,startX,startY,endX,endY, cl) <= (cursor.getSelectedChar().getStat("MOV")*10))
             return true;
         else return false;
         //algoritm A* dar in loc de a utiliza noduri, folosesc coordonate in grid
@@ -672,7 +689,7 @@ public class Game implements Runnable
             if(unit.getEnemy()==false)
             {
                 int distance = Math.abs(x-unit.getX())+Math.abs(y-unit.getY());
-                if(distance < unit.getStat("MOV")+3)
+                if(distance < unit.getStat("MOV")+1)
                     ok = true;
             }
         }

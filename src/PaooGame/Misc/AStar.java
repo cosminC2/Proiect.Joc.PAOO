@@ -1,4 +1,6 @@
 package PaooGame.Misc;
+import PaooGame.Character.CharacterList;
+
 import java.util.*;
 public class AStar {
     public static class Node implements Comparable<Node>{
@@ -26,9 +28,9 @@ public class AStar {
             return Objects.hash(x, y);
         }
     }
-    public static int aStar(Integer[][] grid, int startX, int startY, int goalX, int goalY){
-        Node start = new Node(startX,startY, tileMovementMultiplier(startX,startY,grid),0);
-        Node goal = new Node(goalX, goalY, tileMovementMultiplier(goalX,goalY,grid),0);
+    public static int aStar(Integer[][] grid, int startX, int startY, int goalX, int goalY, CharacterList cl){
+        Node start = new Node(startX,startY, tileMovementMultiplier(startX,startY,grid, cl),0);
+        Node goal = new Node(goalX, goalY, tileMovementMultiplier(goalX,goalY,grid, cl),0);
         int rows = grid.length;
         int cols = grid[0].length;
         PriorityQueue<Node> openList = new PriorityQueue<>();
@@ -48,7 +50,7 @@ public class AStar {
             for(Node neighbor: getNeighbors(current, rows, cols, grid))
             {
                 if(clossedList.contains((neighbor))) continue;
-                int tentGCost = gCost.get(current) + tileMovementMultiplier(neighbor.x, neighbor.y, grid);
+                int tentGCost = gCost.get(current) + tileMovementMultiplier(neighbor.x, neighbor.y, grid, cl);
                 if(!gCost.containsKey(neighbor) || tentGCost < gCost.get(neighbor))
                 {
                     gCost.put(neighbor, tentGCost);
@@ -63,7 +65,8 @@ public class AStar {
         return Math.abs(a.x - b.x) + Math.abs(a.y - b.y); // Manhattan distance
     }
 
-    private static int tileMovementMultiplier(int x, int y, Integer[][] grid){
+    private static int tileMovementMultiplier(int x, int y, Integer[][] grid, CharacterList cl){
+        if(cl.containsEnemy(x,y)) return 9999;
         switch(grid[x][y]){
             case 1:
             case 4:
@@ -124,6 +127,8 @@ public class AStar {
             case 749:
             case 770:
             case 774:
+            case 777:
+            case 779:
             case 806:
             case 807:
             case 808:
