@@ -126,7 +126,10 @@ public class Game implements Runnable
         soundEffects = new Sound();
         cl.saveData(level);
         playMusic(0);
-        try (InputStream is = getClass().getClassLoader().getResourceAsStream("GameData/GridArrayLv"+level+".txt")) {
+        //projectRoot + File.separator + "res" + File.separator + "gameData" + File.separator + "InitDataLv"+lvl+".db";
+        System.out.println(new File("").getAbsolutePath());
+        String mapPath = System.getProperty("user.dir") + File.separator + "res" + File.separator+ "gameData" + File.separator + "GridArrayLv" + level + ".txt";
+        try (InputStream is = getClass().getClassLoader().getResourceAsStream("gameData/GridArrayLv1.txt")) {
             if(is !=null)
             {
                 int jndex = 0;
