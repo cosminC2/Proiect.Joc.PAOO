@@ -436,13 +436,7 @@ public class Game implements Runnable
                 //win
                 stopMusic();
                 level++;
-                if(level>3)StopGame();
-                try {
-                    InitData();
-                } catch (FileNotFoundException e) {
-                    throw new RuntimeException(e);
-                }
-
+                gameProgressState=null;
             }else {
                 //lose
                 g.drawImage(Assets.gameOverScreen,0,0, wnd.GetWndWidth(),wnd.GetWndHeight(),null);
