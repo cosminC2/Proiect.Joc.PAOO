@@ -1,10 +1,8 @@
 package PaooGame.Character;
 
 import PaooGame.GameWindow.GameWindow;
-import PaooGame.Graphics.ImageLoader;
-
+import PaooGame.Graphics.Assets;
 import java.awt.*;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -128,24 +126,6 @@ public class Character extends Stats{
     Image img;
 
 
-    public Character(Integer x, Integer y, Boolean hostile){
-        super();
-        coordX = x;
-        coordY = y;
-        enemy = hostile;
-        canMove = true;
-        canAttak = true;
-        isMoving = false;
-        inCombat=false;
-        physDMG=false;
-        isAlive=true;
-        displayStats=false;
-        if(enemy) {
-            super.name = "Enemy";
-            super.clasa = "Bad Paladin";
-            img = ImageLoader.LoadImage("/textures/Paoo"+name+"Sprite.png");
-        }
-    }
     public Character(Integer x, Integer y, Boolean hostile, String name, String clasa, int hp, int str,int spd, int def, int res, int mov, Boolean pdmg)
     {
         super(name, clasa, hp, str,spd, def, res, mov, pdmg);
@@ -159,7 +139,7 @@ public class Character extends Stats{
         physDMG=pdmg;
         isAlive=true;
         displayStats=false;
-        img= ImageLoader.LoadImage("/textures/Paoo"+name+"Sprite.png");
+        img= Assets.getCharacterImage(name);
     }
     public void set(Integer x, Integer y){
         coordX = x;
@@ -219,8 +199,7 @@ public class Character extends Stats{
     public void Draw(GameWindow wnd){
         Graphics g = wnd.GetCanvas().getBufferStrategy().getDrawGraphics();
         g.setFont(new Font("Serif", Font.BOLD, 26));
-        Image imgBase = ImageLoader.LoadImage("/textures/PaooHoverMenuBase.png");
-        g.drawImage(imgBase,16,wnd.GetWndHeight()-96,imgBase.getWidth(null)*2,imgBase.getHeight(null)*2,null);
+        g.drawImage(Assets.imgBase,16,wnd.GetWndHeight()-96,Assets.imgBase.getWidth(null)*2,Assets.imgBase.getHeight(null)*2,null);
         g.drawImage(img,(int)(wnd.GetWndWidth()*0.132),(int)(wnd.GetWndHeight()*0.8625),null);
         String health = hp+"";
         g.drawString(health,78, wnd.GetWndHeight()-24);
@@ -238,7 +217,7 @@ public class Character extends Stats{
         if(displayStats)
         {
             Graphics g = wnd.GetCanvas().getBufferStrategy().getDrawGraphics();
-            Image imgMenuBase = ImageLoader.LoadImage("/textures/PaooCharMenuBase.png");
+            Image imgMenuBase =Assets.imeMenuBase;
             g.setFont(new Font("Monospaced", Font.BOLD, 36));
             g.setColor(new Color(248,240,136));
             g.drawImage(imgMenuBase,0,0, wnd.GetWndWidth(),wnd.GetWndHeight(),null);

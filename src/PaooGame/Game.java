@@ -9,6 +9,8 @@ import PaooGame.Graphics.Assets;
 import PaooGame.Misc.Sound.Sound;
 import PaooGame.Tiles.Tile;
 import PaooGame.Misc.AStar;
+import PaooGame.Misc.GameState.*;
+import PaooGame.TitleWindow.TitleWindow;
 
 import java.awt.*;
 import java.awt.image.BufferStrategy;
@@ -75,6 +77,7 @@ public class Game implements Runnable
     private Sound sound;
     private Sound soundEffects;
     private int level;
+    private GameState gs;
     private Tile tile; /*!< variabila membra temporara. Este folosita in aceasta etapa doar pentru a desena ceva pe ecran.*/
 
     /*! \fn public Game(String title, int width, int height)
@@ -111,8 +114,8 @@ public class Game implements Runnable
             /// Este construita fereastra grafica.
         wnd.BuildGameWindow();
             /// Se incarca toate elementele grafice (dale)
-
         Assets.Init();
+        gs = new GameState(State.TitleScreen);
     }
     private void InitData() throws FileNotFoundException {
         cl = new CharacterList();
@@ -129,7 +132,7 @@ public class Game implements Runnable
         //projectRoot + File.separator + "res" + File.separator + "gameData" + File.separator + "InitDataLv"+lvl+".db";
         System.out.println(new File("").getAbsolutePath());
         String mapPath = System.getProperty("user.dir") + File.separator + "res" + File.separator+ "gameData" + File.separator + "GridArrayLv" + level + ".txt";
-        try (InputStream is = getClass().getClassLoader().getResourceAsStream("gameData/GridArrayLv1.txt")) {
+        try (InputStream is = getClass().getClassLoader().getResourceAsStream("gameData/GridArrayLv"+level+".txt")) {
             if(is !=null)
             {
                 int jndex = 0;
@@ -259,38 +262,58 @@ public class Game implements Runnable
     private void Update()
     {
         gameProgressState = updateGameState();
-        if(gameProgressState==null) {
-            UpdateCursorMovement();
-            PerformAction();
-            PerformSaveAction();
-            if(cl.lastEnemy()&&cl.getLastEnemy()!=null) cl.setLastEnemy(true);
-            try {
-                if (cl.getLastEnemy()) {
-                    cl.setLastEnemy(null);
-                    stopMusic();
-                    playMusic(1);
+        //gPS este un Boolean care se foloseste de cele trei stari ale sale: null, true si false
+        //null - jocul este in desfasurare/nicio conditie de game finish nu a fost indeplinita
+        //true - jocul s-a terminat in indeplinirea conditiei de victorie (eliminarea tuturor inamicilor)
+        //false - jocul s-a terminat in indeplinirea conditiei de esec (personajul principal a murit)
+
+        switch (gs.getState()) {
+            case TitleScreen:
+                gs.performUpdate(wnd.kh);
+                break;
+            case MainMenu:
+            case Settings:
+            case Game:
+                if(gameProgressState==null) {
+                    UpdateCursorMovement();
+                    PerformAction();
+                    PerformSaveAction();
+                    if(cl.lastEnemy()&&cl.getLastEnemy()!=null) cl.setLastEnemy(true);
+                    try {
+                        if (cl.getLastEnemy()) {
+                            cl.setLastEnemy(null);
+
+                        }
+                    }
+                    catch(NullPointerException e)
+                    {
+
+                    }
                 }
-            }
-            catch(NullPointerException e)
-            {
+                else {
+                    if(gameProgressState)
+                    {
+                        //WIN
+                        if(level<3) level++;
+                        try {
+                            InitData();
+                            stopMusic();
+                        } catch (FileNotFoundException e) {
+                            throw new RuntimeException(e);
+                        }
+                        gameProgressState=null;
+                    } else{
+                        //LOSE
+                        if(sound.getIndex()!=9) {
+                            //conditie pentru a pune muzica doar o singura data
+                            stopMusic();
+                            playMusic(9);
+                        }
+                    }
 
-            }
-        }
-        else {
-            if(gameProgressState)
-            {
-
-                //WIN
-            } else{
-                //LOSE
-                if(sound.getIndex()!=9) {
-                    //conditie pentru a pune muzica doar o singura data
-                    stopMusic();
-                    playMusic(9);
                 }
-            }
+                break;
         }
-
 
     }
 
@@ -326,120 +349,131 @@ public class Game implements Runnable
 
             /// operatie de desenare
             // ...............
+        switch (gs.getState()){
+            case TitleScreen:
+                g.drawImage(Assets.mainMenu,0,0, wnd.GetWndWidth(),wnd.GetWndHeight(),null);
+                break;
+            case MainMenu:
+            case Settings:
+            case Game:
+                for (int tileCoordX = 0; tileCoordX * Tile.TILE_WIDTH < wnd.GetWndWidth(); tileCoordX++) {
+                    for (int tileCoordY = 0; tileCoordY * Tile.TILE_HEIGHT < wnd.GetWndHeight(); tileCoordY++) {
+                        Tile.tileList[mapTable[tileCoordX][tileCoordY]].Draw(g, tileCoordX * Tile.TILE_WIDTH, tileCoordY * Tile.TILE_HEIGHT);
+                        if (isInFog(tileCoordX, tileCoordY))
+                        //if(true)
+                        {
+                            if (cl.contains(tileCoordX, tileCoordY)) {
+                                if (cl.find(tileCoordX, tileCoordY).getEnemy() == false) {
+                                    switch (cl.find(tileCoordX, tileCoordY).getClasa()) {
+                                        case "Lord":
+                                            Tile.tileList[155].Draw(g, tileCoordX * Tile.TILE_WIDTH, tileCoordY * Tile.TILE_HEIGHT);
+                                            break;
+                                        case "S-Paladin":
+                                        case "L-Paladin":
+                                        case "A-Paladin":
+                                            Tile.tileList[153].Draw(g, tileCoordX * Tile.TILE_WIDTH, tileCoordY * Tile.TILE_HEIGHT);
+                                            break;
+                                        case "S-Cavalier":
+                                        case "L-Cavalier":
+                                        case "A-Cavalier":
+                                            Tile.tileList[93].Draw(g, tileCoordX * Tile.TILE_WIDTH, tileCoordY * Tile.TILE_HEIGHT);
+                                            break;
+                                        case "S-Knight":
+                                        case "L-Knight":
+                                        case "A-Knight":
+                                            Tile.tileList[61].Draw(g, tileCoordX * Tile.TILE_WIDTH, tileCoordY * Tile.TILE_HEIGHT);
+                                            break;
+                                        case "S-General":
+                                        case "L-General":
+                                        case "A-General":
+                                            Tile.tileList[29].Draw(g, tileCoordX * Tile.TILE_WIDTH, tileCoordY * Tile.TILE_HEIGHT);
+                                            break;
+                                        case "Fighter":
+                                            Tile.tileList[219].Draw(g, tileCoordX * Tile.TILE_WIDTH, tileCoordY * Tile.TILE_HEIGHT);
+                                            break;
+                                        case "Mage":
+                                            Tile.tileList[185].Draw(g, tileCoordX * Tile.TILE_WIDTH, tileCoordY * Tile.TILE_HEIGHT);
+                                            break;
+                                        case "Rogue":
+                                            Tile.tileList[186].Draw(g, tileCoordX * Tile.TILE_WIDTH, tileCoordY * Tile.TILE_HEIGHT);
+                                            break;
+                                    }
+                                } else {
+                                    switch (cl.find(tileCoordX, tileCoordY).getClasa()) {
+                                        case "S-Paladin":
+                                        case "L-Paladin":
+                                        case "A-Paladin":
+                                            Tile.tileList[154].Draw(g, tileCoordX * Tile.TILE_WIDTH, tileCoordY * Tile.TILE_HEIGHT);
+                                            break;
+                                        case "S-Cavalier":
+                                        case "L-Cavalier":
+                                        case "A-Cavalier":
+                                            Tile.tileList[94].Draw(g, tileCoordX * Tile.TILE_WIDTH, tileCoordY * Tile.TILE_HEIGHT);
+                                            break;
+                                        case "S-Knight":
+                                        case "L-Knight":
+                                        case "A-Knight":
+                                            Tile.tileList[62].Draw(g, tileCoordX * Tile.TILE_WIDTH, tileCoordY * Tile.TILE_HEIGHT);
+                                            break;
+                                        case "S-General":
+                                        case "L-General":
+                                        case "A-General":
+                                            Tile.tileList[30].Draw(g, tileCoordX * Tile.TILE_WIDTH, tileCoordY * Tile.TILE_HEIGHT);
+                                            break;
+                                    }
+                                }
 
-        if(gameProgressState==null) {
-            for (int tileCoordX = 0; tileCoordX * Tile.TILE_WIDTH < wnd.GetWndWidth(); tileCoordX++) {
-                for (int tileCoordY = 0; tileCoordY * Tile.TILE_HEIGHT < wnd.GetWndHeight(); tileCoordY++) {
-                    Tile.tileList[mapTable[tileCoordX][tileCoordY]].Draw(g, tileCoordX * Tile.TILE_WIDTH, tileCoordY * Tile.TILE_HEIGHT);
-                    if (isInFog(tileCoordX, tileCoordY))
-                    //if(true)
-                    {
-                        if (cl.contains(tileCoordX, tileCoordY)) {
-                            if (cl.find(tileCoordX, tileCoordY).getEnemy() == false) {
-                                switch (cl.find(tileCoordX, tileCoordY).getClasa()) {
-                                    case "Lord":
-                                        Tile.tileList[155].Draw(g, tileCoordX * Tile.TILE_WIDTH, tileCoordY * Tile.TILE_HEIGHT);
-                                        break;
-                                    case "S-Paladin":
-                                    case "L-Paladin":
-                                    case "A-Paladin":
-                                        Tile.tileList[153].Draw(g, tileCoordX * Tile.TILE_WIDTH, tileCoordY * Tile.TILE_HEIGHT);
-                                        break;
-                                    case "S-Cavalier":
-                                    case "L-Cavalier":
-                                    case "A-Cavalier":
-                                        Tile.tileList[93].Draw(g, tileCoordX * Tile.TILE_WIDTH, tileCoordY * Tile.TILE_HEIGHT);
-                                        break;
-                                    case "S-Knight":
-                                    case "L-Knight":
-                                    case "A-Knight":
-                                        Tile.tileList[61].Draw(g, tileCoordX * Tile.TILE_WIDTH, tileCoordY * Tile.TILE_HEIGHT);
-                                        break;
-                                    case "S-General":
-                                    case "L-General":
-                                    case "A-General":
-                                        Tile.tileList[29].Draw(g, tileCoordX * Tile.TILE_WIDTH, tileCoordY * Tile.TILE_HEIGHT);
-                                        break;
-                                    case "Fighter":
-                                        Tile.tileList[219].Draw(g, tileCoordX * Tile.TILE_WIDTH, tileCoordY * Tile.TILE_HEIGHT);
-                                        break;
-                                    case "Mage":
-                                        Tile.tileList[185].Draw(g, tileCoordX * Tile.TILE_WIDTH, tileCoordY * Tile.TILE_HEIGHT);
-                                        break;
-                                    case "Rogue":
-                                        Tile.tileList[186].Draw(g, tileCoordX * Tile.TILE_WIDTH, tileCoordY * Tile.TILE_HEIGHT);
-                                        break;
-                                }
-                            } else {
-                                switch (cl.find(tileCoordX, tileCoordY).getClasa()) {
-                                    case "S-Paladin":
-                                    case "L-Paladin":
-                                    case "A-Paladin":
-                                        Tile.tileList[154].Draw(g, tileCoordX * Tile.TILE_WIDTH, tileCoordY * Tile.TILE_HEIGHT);
-                                        break;
-                                    case "S-Cavalier":
-                                    case "L-Cavalier":
-                                    case "A-Cavalier":
-                                        Tile.tileList[94].Draw(g, tileCoordX * Tile.TILE_WIDTH, tileCoordY * Tile.TILE_HEIGHT);
-                                        break;
-                                    case "S-Knight":
-                                    case "L-Knight":
-                                    case "A-Knight":
-                                        Tile.tileList[62].Draw(g, tileCoordX * Tile.TILE_WIDTH, tileCoordY * Tile.TILE_HEIGHT);
-                                        break;
-                                    case "S-General":
-                                    case "L-General":
-                                    case "A-General":
-                                        Tile.tileList[30].Draw(g, tileCoordX * Tile.TILE_WIDTH, tileCoordY * Tile.TILE_HEIGHT);
-                                        break;
-                                }
                             }
-
+                        }
+                        else
+                            Tile.tileList[190].Draw(g, tileCoordX * Tile.TILE_WIDTH, tileCoordY * Tile.TILE_HEIGHT);
+                        if (cursor.getSelectedChar() != null && cursor.getSelectedChar().getMoving()) {
+                            int range = AStar.aStar(mapTable, cursor.getSelectedChar().getX(), cursor.getSelectedChar().getY(), tileCoordX, tileCoordY, cl);
+                            if (range <= cursor.getSelectedChar().getStat("MOV") * 10) {
+                                Tile.hoverTile.Draw(g, tileCoordX * Tile.TILE_WIDTH, tileCoordY * Tile.TILE_HEIGHT);
+                            } else if (range <= (cursor.getSelectedChar().getStat("MOV") + 1) * 10) {
+                                Tile.attackTile.Draw(g, tileCoordX * Tile.TILE_WIDTH, tileCoordY * Tile.TILE_HEIGHT);
+                            }
                         }
                     }
-                    else
-                        Tile.tileList[190].Draw(g, tileCoordX * Tile.TILE_WIDTH, tileCoordY * Tile.TILE_HEIGHT);
-                    if (cursor.getSelectedChar() != null && cursor.getSelectedChar().getMoving()) {
-                        int range = AStar.aStar(mapTable, cursor.getSelectedChar().getX(), cursor.getSelectedChar().getY(), tileCoordX, tileCoordY, cl);
-                        if (range <= cursor.getSelectedChar().getStat("MOV") * 10) {
-                            Tile.hoverTile.Draw(g, tileCoordX * Tile.TILE_WIDTH, tileCoordY * Tile.TILE_HEIGHT);
-                        } else if (range <= (cursor.getSelectedChar().getStat("MOV") + 1) * 10) {
-                            Tile.attackTile.Draw(g, tileCoordX * Tile.TILE_WIDTH, tileCoordY * Tile.TILE_HEIGHT);
-                        }
+                    if (cl.contains(cursor.getX(), cursor.getY())) {
+                        //System.out.println("HOVER ON UNIT");
+                        if (cl.find(cursor.getX(), cursor.getY()) != null)
+                            cl.find(cursor.getX(), cursor.getY()).Draw(wnd);
+                    }
+
+                }
+                if (cm.getOpen()) {
+                    System.out.println("OPEN");
+                    cm.draw(g, cursor.getX() * Tile.TILE_WIDTH, cursor.getY() * Tile.TILE_HEIGHT);
+                }
+                if (cursor.getSelectedChar() != null) {
+                    System.out.println("Selected character");
+                    if (cursor.getSelectedChar().getDisplayStats()) {
+                        System.out.println("DISPLAYING MENU");
+                        cursor.getSelectedChar().dispStats(wnd);
                     }
                 }
-                if (cl.contains(cursor.getX(), cursor.getY())) {
-                    //System.out.println("HOVER ON UNIT");
-                    if (cl.find(cursor.getX(), cursor.getY()) != null)
-                        cl.find(cursor.getX(), cursor.getY()).Draw(wnd);
-                }
 
-            }
-            if (cm.getOpen()) {
-                System.out.println("OPEN");
-                cm.draw(g, cursor.getX() * Tile.TILE_WIDTH, cursor.getY() * Tile.TILE_HEIGHT);
-            }
-            if (cursor.getSelectedChar() != null) {
-                System.out.println("Selected character");
-                if (cursor.getSelectedChar().getDisplayStats()) {
-                    System.out.println("DISPLAYING MENU");
-                    cursor.getSelectedChar().dispStats(wnd);
+                //g.drawRect(cursor.getX() * Tile.TILE_WIDTH, cursor.getY() * Tile.TILE_HEIGHT, Tile.TILE_WIDTH, Tile.TILE_HEIGHT);
+                if (!(cursor.getSelectedChar() != null && cursor.getSelectedChar().getDisplayStats()))
+                    Tile.cursorTile.Draw(g, cursor.getX() * Tile.TILE_WIDTH, cursor.getY() * Tile.TILE_HEIGHT);
+                if(gameProgressState!=null&&!gameProgressState)
+                {
+                    g.drawImage(Assets.gameOverScreen,0,0, wnd.GetWndWidth(),wnd.GetWndHeight(),null);
                 }
-            }
+        }
+        if(gameProgressState==null) {
+        //if(true) {
 
-            //g.drawRect(cursor.getX() * Tile.TILE_WIDTH, cursor.getY() * Tile.TILE_HEIGHT, Tile.TILE_WIDTH, Tile.TILE_HEIGHT);
-            if (!(cursor.getSelectedChar() != null && cursor.getSelectedChar().getDisplayStats()))
-                Tile.cursorTile.Draw(g, cursor.getX() * Tile.TILE_WIDTH, cursor.getY() * Tile.TILE_HEIGHT);
         }else{
             if(gameProgressState)
             {
                 //win
-                stopMusic();
-                level++;
-                gameProgressState=null;
+
             }else {
                 //lose
-                g.drawImage(Assets.gameOverScreen,0,0, wnd.GetWndWidth(),wnd.GetWndHeight(),null);
+
             }
         }
 

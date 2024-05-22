@@ -1,8 +1,6 @@
 package PaooGame.Character;
 
-
-import PaooGame.Graphics.ImageLoader;
-import PaooGame.Graphics.SpriteSheet;
+import PaooGame.Graphics.Assets;
 import java.awt.image.BufferedImage;
 import java.awt.*;
 
@@ -17,7 +15,7 @@ public class CharacterMenu {
 
     }
     public void init(){
-        img = ImageLoader.LoadImage("/textures/PaooMenuSprite.png");
+        img = Assets.imgMenu;
 
     }
     public void draw(Graphics g, int x, int y){

@@ -12,26 +12,16 @@ import java.awt.image.BufferedImage;
 public class Assets
 {
         /// Referinte catre elementele grafice (dale) utilizate in joc.
-    public static BufferedImage playerLeft;
-    public static BufferedImage playerRight;
-    public static BufferedImage soil;
-    public static BufferedImage grass;
-    public static BufferedImage mountain;
-    public static BufferedImage townGrass;
-    public static BufferedImage townGrassDestroyed;
-    public static BufferedImage townSoil;
-    public static BufferedImage water;
-    public static BufferedImage rockUp;
-    public static BufferedImage rockDown;
-    public static BufferedImage rockLeft;
-    public static BufferedImage rockRight;
-    public static BufferedImage tree;
     public static BufferedImage cursor;
     public static BufferedImage hover;
     public static BufferedImage attack;
     public static BufferedImage mainMenu;
     public static BufferedImage gameOverScreen;
+    public static BufferedImage imgBase;
     public static BufferedImage[] TileList = new BufferedImage[32*32];
+    public static BufferedImage[] CharacterImages;
+    public static BufferedImage imeMenuBase;
+    public static BufferedImage imgMenu;
 
     /*! \fn public static void Init()
         \brief Functia initializaza referintele catre elementele grafice utilizate.
@@ -64,5 +54,32 @@ public class Assets
 
         mainMenu = ImageLoader.LoadImage("/textures/PaooTitleScreen.png");
         gameOverScreen = ImageLoader.LoadImage("/textures/PaooGameOverScreen.png");
+        imgBase = ImageLoader.LoadImage("/textures/PaooHoverMenuBase.png");
+        imeMenuBase = ImageLoader.LoadImage("/textures/PaooCharMenuBase.png");
+        imgMenu = ImageLoader.LoadImage("/textures/PaooMenuSprite.png");
+        CharacterImages = new BufferedImage[9];
+        CharacterImages[0]= ImageLoader.LoadImage("/textures/PaooBadGuySprite.png");
+        CharacterImages[1]= ImageLoader.LoadImage("/textures/PaooBossSprite.png");
+        CharacterImages[2]= ImageLoader.LoadImage("/textures/PaooColmSprite.png");
+        CharacterImages[3]= ImageLoader.LoadImage("/textures/PaooErikaSprite.png");
+        CharacterImages[4]= ImageLoader.LoadImage("/textures/PaooFranzSprite.png");
+        CharacterImages[5]= ImageLoader.LoadImage("/textures/PaooGarciaSprite.png");
+        CharacterImages[6]= ImageLoader.LoadImage("/textures/PaooGiliamSprite.png");
+        CharacterImages[7]= ImageLoader.LoadImage("/textures/PaooLuteSprite.png");
+        CharacterImages[8]= ImageLoader.LoadImage("/textures/PaooSethSprite.png");
+    }
+    public static BufferedImage getCharacterImage(String name){
+        switch(name){
+            case "BadGuy": return CharacterImages[0];
+            case "Boss": return CharacterImages[1];
+            case "Colm": return CharacterImages[2];
+            case "Erika": return CharacterImages[3];
+            case "Franz": return CharacterImages[4];
+            case "Garcia": return CharacterImages[5];
+            case "Giliam": return CharacterImages[6];
+            case "Lute": return CharacterImages[7];
+            case "Seth": return CharacterImages[8];
+            default: return null;
+        }
     }
 }
