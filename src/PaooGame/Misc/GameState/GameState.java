@@ -4,6 +4,13 @@ import PaooGame.Misc.KeyHandler;
 
 ;
 public class GameState {
+    //state machine pentru determinare jocului
+    //Title -> Menu
+    //          /\
+    //         /  \
+    //  Settings   Game
+    //Game -> Title
+    //Settings -> Menu
     State state;
     public GameState(State state)
     {
@@ -20,12 +27,16 @@ public class GameState {
     {
         if(kh.spacePressed)
         {
+            kh.spacePressed = false;
             switch(state)
             {
                 case TitleScreen:
+                    state = State.MainMenu;
+                    break;
+                case MainMenu:
+                case Settings:
                     state = State.Game;
                     break;
-
             }
         }
     }

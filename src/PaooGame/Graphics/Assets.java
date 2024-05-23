@@ -1,7 +1,5 @@
 package PaooGame.Graphics;
 
-import PaooGame.Tiles.Tile;
-
 import java.awt.image.BufferedImage;
 
 /*! \class public class Assets
@@ -22,6 +20,7 @@ public class Assets
     public static BufferedImage[] CharacterImages;
     public static BufferedImage imeMenuBase;
     public static BufferedImage imgMenu;
+    public static BufferedImage menuScreen;
 
     /*! \fn public static void Init()
         \brief Functia initializaza referintele catre elementele grafice utilizate.
@@ -57,6 +56,7 @@ public class Assets
         imgBase = ImageLoader.LoadImage("/textures/PaooHoverMenuBase.png");
         imeMenuBase = ImageLoader.LoadImage("/textures/PaooCharMenuBase.png");
         imgMenu = ImageLoader.LoadImage("/textures/PaooMenuSprite.png");
+        menuScreen = ImageLoader.LoadImage("/textures/PaooMenuScreen.png");
         CharacterImages = new BufferedImage[9];
         CharacterImages[0]= ImageLoader.LoadImage("/textures/PaooBadGuySprite.png");
         CharacterImages[1]= ImageLoader.LoadImage("/textures/PaooBossSprite.png");

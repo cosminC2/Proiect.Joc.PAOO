@@ -15,6 +15,8 @@ public class UniversalTile extends Tile
     public UniversalTile(int id)
     {
         /// Apel al constructorului clasei de baza
+
+        //in loc de a crea 2,000 de clase diferite, generalizez procesul si creez o clasa universala pentru asta
         super(Assets.TileList[id], id, false);
     }
 }

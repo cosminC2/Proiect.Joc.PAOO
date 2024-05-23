@@ -1,14 +1,13 @@
 package PaooGame.Misc.Sound;
-import javax.sound.sampled.AudioInputStream;
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.Clip;
+import javax.sound.sampled.*;
+import java.io.IOException;
 import java.net.URL;
 
 public class Sound {
     Clip clip;
     URL soundURL[] = new URL[32];
     Boolean isPlaying = false;
-    Integer index;
+    Integer index = -1;
     public Sound() {
         soundURL[0] = getClass().getResource("/Audio/PreciousThings.wav");
         soundURL[1] = getClass().getResource("/Audio/WinningRoad.wav");
@@ -20,6 +19,8 @@ public class Sound {
         soundURL[7] = getClass().getResource("/Audio/Eclipse3.wav");
         soundURL[8] = getClass().getResource("/Audio/Select 1.wav");
         soundURL[9] = getClass().getResource("/Audio/Game Over.wav");
+        soundURL[10]= getClass().getResource("/Audio/MainTheme.wav");
+        //initializare fisiere de sunet
     }
 
     public void setFile(int i){
@@ -28,7 +29,8 @@ public class Sound {
             clip = AudioSystem.getClip();
             clip.open(ais);
             index = i;
-        }catch(Exception e){
+        }catch (LineUnavailableException | IOException | UnsupportedAudioFileException e) {
+            throw new RuntimeException(e);
         }
 
     }
@@ -40,13 +42,9 @@ public class Sound {
         clip.loop(Clip.LOOP_CONTINUOUSLY);
     }
     public void stop(){
-        clip.stop();
+        if(clip!=null)clip.stop();
         index = null;
         isPlaying = false;
-    }
-
-    public Boolean getPlaying() {
-        return isPlaying;
     }
 
     public Integer getIndex() {

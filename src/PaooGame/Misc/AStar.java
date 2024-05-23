@@ -3,6 +3,9 @@ import PaooGame.Character.CharacterList;
 
 import java.util.*;
 public class AStar {
+    //implementare clasica al algoritmului A*
+    //functie de costuri custom bazata pe ID-ul tile-ului in sine
+    //foarte batuta in cap totusi, puteam face liste/colectii or whatever dar imi era lene
     public static class Node implements Comparable<Node>{
         int x, y, cost, fCost;
         Node(int x, int y, int cost, int fCost){
@@ -150,6 +153,7 @@ public class AStar {
                 return 9999;
         }
         return 20;
+        //aceasta este o implementare foarte batuta in cap^^^^
     }
     private static List<Node> getNeighbors(Node node, int rows, int cols, Integer[][] grid) {
         List<Node> neighbors = new ArrayList<>();

@@ -58,14 +58,6 @@ public class Tile
         tiles[id] = this;
     }
 
-    /*! \fn public void Update()
-        \brief Actualizeaza proprietatile dalei.
-     */
-    public void Update()
-    {
-
-    }
-
     /*! \fn public void Draw(Graphics g, int x, int y)
         \brief Deseneaza in fereastra dala.
 
@@ -82,16 +74,5 @@ public class Tile
     /*! \fn public boolean IsSolid()
         \brief Returneaza proprietatea de dala solida (supusa coliziunilor) sau nu.
      */
-    public boolean IsSolid()
-    {
-        return false;
-    }
 
-    /*! \fn public int GetId()
-        \brief Returneaza id-ul dalei.
-     */
-    public int GetId()
-    {
-        return id;
-    }
 }

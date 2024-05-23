@@ -13,19 +13,6 @@ class Stats{
     protected Integer hp, maxhp, str, spd, def, res, mov;
     protected Boolean physDMG;
     protected Boolean isAlive;
-    public Stats(){
-        name="SSeth";
-        clasa="Paladin";
-        hp=30;
-        maxhp=hp;
-        str=14;
-        spd=12;
-        def=11;
-        res=3;
-        mov=7;
-        physDMG=false;
-        isAlive=true;
-    }
     public static Map<String, List<String>> WeaponType = Map.ofEntries(
             Map.entry("A", List.of("A-Paladin", "A-Cavalier", "A-Knight", "A-General", "Fighter")),
             Map.entry("L", List.of("L-Paladin", " L-Cavalier", " L-Knight", " L-General", "Solider")),
@@ -106,13 +93,9 @@ class Stats{
             default: return -99;
         }
     }
-    public String getName(){return name;}
 
     public String getClasa() {return clasa;}
 
-    public Boolean getPhysDMG() {
-        return physDMG;
-    }
 }
 public class Character extends Stats{
     Integer coordX;

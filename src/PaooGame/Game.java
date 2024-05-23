@@ -10,7 +10,6 @@ import PaooGame.Misc.Sound.Sound;
 import PaooGame.Tiles.Tile;
 import PaooGame.Misc.AStar;
 import PaooGame.Misc.GameState.*;
-import PaooGame.TitleWindow.TitleWindow;
 
 import java.awt.*;
 import java.awt.image.BufferStrategy;
@@ -71,13 +70,13 @@ public class Game implements Runnable
     ///                 ****************          *****************        ***************
 
     private Graphics        g;          /*!< Referinta catre un context grafic.*/
-    private Integer[][] mapTable;
+    private Integer[][] mapTable;       //array folosit pentru incarcarea datelor de harta
 
-    private Boolean gameProgressState;
-    private Sound sound;
-    private Sound soundEffects;
-    private int level;
-    private GameState gs;
+    private Boolean gameProgressState;  //tine cont de progresul jocului
+    private Sound sound;                //implementare muzica fundal
+    private Sound soundEffects;         //implementare sound effects
+    private int level;                  //tine cont de nivelul in care sunt
+    private GameState gs;               // tine cont de starea in care se afla jocul (titlu, meniu, jocul in sine)
     private Tile tile; /*!< variabila membra temporara. Este folosita in aceasta etapa doar pentru a desena ceva pe ecran.*/
 
     /*! \fn public Game(String title, int width, int height)
@@ -116,6 +115,8 @@ public class Game implements Runnable
             /// Se incarca toate elementele grafice (dale)
         Assets.Init();
         gs = new GameState(State.TitleScreen);
+        sound = new Sound();
+        soundEffects = new Sound();
     }
     private void InitData() throws FileNotFoundException {
         cl = new CharacterList();
@@ -125,18 +126,13 @@ public class Game implements Runnable
         cm.init();
         gameProgressState = null;
         mapTable= new Integer[17][13];
-        sound = new Sound();
-        soundEffects = new Sound();
-        cl.saveData(level);
+        cl.saveData(level); //initializare savestate
         playMusic(0);
-        //projectRoot + File.separator + "res" + File.separator + "gameData" + File.separator + "InitDataLv"+lvl+".db";
-        System.out.println(new File("").getAbsolutePath());
-        String mapPath = System.getProperty("user.dir") + File.separator + "res" + File.separator+ "gameData" + File.separator + "GridArrayLv" + level + ".txt";
-        try (InputStream is = getClass().getClassLoader().getResourceAsStream("gameData/GridArrayLv"+level+".txt")) {
+        try (InputStream is = getClass().getClassLoader().getResourceAsStream("gameData/GridArrayLv"+level+".txt")) {   //citirea din fisier a datelor de harta
             if(is !=null)
             {
                 int jndex = 0;
-                int index = 0;
+                int index;
                 BufferedReader bfr = new BufferedReader(new InputStreamReader(is));
                 String line;
                 while ((line = bfr.readLine()) != null) {
@@ -261,7 +257,6 @@ public class Game implements Runnable
      */
     private void Update()
     {
-        gameProgressState = updateGameState();
         //gPS este un Boolean care se foloseste de cele trei stari ale sale: null, true si false
         //null - jocul este in desfasurare/nicio conditie de game finish nu a fost indeplinita
         //true - jocul s-a terminat in indeplinirea conditiei de victorie (eliminarea tuturor inamicilor)
@@ -269,20 +264,40 @@ public class Game implements Runnable
 
         switch (gs.getState()) {
             case TitleScreen:
-                gs.performUpdate(wnd.kh);
-                break;
+
+
             case MainMenu:
             case Settings:
+                if(sound.getIndex()!=10)
+                {
+                    //implementare bizara pentru a verifica overlap-uri de BGM (Background Music/muzica de fundal)
+                    stopMusic();
+                    playMusic(10);
+                }
+                gs.performUpdate(wnd.kh);   //update la starea de joc pe baza inputului de la tastatura
+                break;
             case Game:
-                if(gameProgressState==null) {
-                    UpdateCursorMovement();
-                    PerformAction();
-                    PerformSaveAction();
+                gameProgressState = updateGameState();  //verifica conditiile de win/lose al jocului
+                if(gameProgressState==null) {           //daca gPS e null -> jocul nu a indeplinit o conditie de win/lose -> continua
+                    UpdateCursorMovement();             //misca cursorul jocului
+                    PerformAction();                    //citeste inputuri de actiuni de la jucator
+                    PerformSaveAction();                //input de tastatura pentru save/load
                     if(cl.lastEnemy()&&cl.getLastEnemy()!=null) cl.setLastEnemy(true);
                     try {
-                        if (cl.getLastEnemy()) {
+                        if (cl.getLastEnemy()) {        //atunci cand nu mai ramane decat un singur inamic, BGM-ul se schimba
                             cl.setLastEnemy(null);
-
+                            if(sound.getIndex()!=1)
+                            {
+                                stopMusic();
+                                playMusic(1);
+                            }
+                        }
+                        else {
+                            if(sound.getIndex()!=0)
+                            {
+                                stopMusic();
+                                playMusic(0);
+                            }
                         }
                     }
                     catch(NullPointerException e)
@@ -294,14 +309,19 @@ public class Game implements Runnable
                     if(gameProgressState)
                     {
                         //WIN
-                        if(level<3) level++;
-                        try {
-                            InitData();
-                            stopMusic();
-                        } catch (FileNotFoundException e) {
-                            throw new RuntimeException(e);
+                        if(level<3) {
+                            level++;
+                            try {
+                                stopMusic();
+                                InitData();
+                            } catch (FileNotFoundException e) {
+                                throw new RuntimeException(e);
+                            }
+                            gameProgressState = null;
                         }
-                        gameProgressState=null;
+                        else{
+                            gs.setState(State.TitleScreen);
+                        }
                     } else{
                         //LOSE
                         if(sound.getIndex()!=9) {
@@ -349,22 +369,26 @@ public class Game implements Runnable
 
             /// operatie de desenare
             // ...............
-        switch (gs.getState()){
+        switch (gs.getState()){ //se verifica starea jocului
             case TitleScreen:
-                g.drawImage(Assets.mainMenu,0,0, wnd.GetWndWidth(),wnd.GetWndHeight(),null);
+                g.drawImage(Assets.mainMenu,0,0, wnd.GetWndWidth(),wnd.GetWndHeight(),null);    //se incarca imaginea de titlu
                 break;
             case MainMenu:
-            case Settings:
-            case Game:
+                g.drawImage(Assets.menuScreen,0,0, wnd.GetWndWidth(),wnd.GetWndHeight(),null);  //se incarca imaginea de meniu
+                break;
+            case Settings:  //de adaugat in sequel :)
+            case Game:      //se randeaza jocul in sine
                 for (int tileCoordX = 0; tileCoordX * Tile.TILE_WIDTH < wnd.GetWndWidth(); tileCoordX++) {
                     for (int tileCoordY = 0; tileCoordY * Tile.TILE_HEIGHT < wnd.GetWndHeight(); tileCoordY++) {
                         Tile.tileList[mapTable[tileCoordX][tileCoordY]].Draw(g, tileCoordX * Tile.TILE_WIDTH, tileCoordY * Tile.TILE_HEIGHT);
-                        if (isInFog(tileCoordX, tileCoordY))
-                        //if(true)
+                        //parcurg fiecare pozitie din array si randez tile-ul potrivit pe baza valorii acesteia (care este un id)
+                        if (isInFog(tileCoordX, tileCoordY))    //implementarea fog of war (daca distanta de la toate personajele si tile-ul corespunzator se incadreaza
+                                                                // intr-o anumita valoare
                         {
                             if (cl.contains(tileCoordX, tileCoordY)) {
+                                //se afla un personaj pe acest tile -> se randeaza personajul
                                 if (cl.find(tileCoordX, tileCoordY).getEnemy() == false) {
-                                    switch (cl.find(tileCoordX, tileCoordY).getClasa()) {
+                                    switch (cl.find(tileCoordX, tileCoordY).getClasa()) {//randare personaje playable pe baza atributului clasa
                                         case "Lord":
                                             Tile.tileList[155].Draw(g, tileCoordX * Tile.TILE_WIDTH, tileCoordY * Tile.TILE_HEIGHT);
                                             break;
@@ -399,7 +423,7 @@ public class Game implements Runnable
                                             break;
                                     }
                                 } else {
-                                    switch (cl.find(tileCoordX, tileCoordY).getClasa()) {
+                                    switch (cl.find(tileCoordX, tileCoordY).getClasa()) {//randare personaje inamice
                                         case "S-Paladin":
                                         case "L-Paladin":
                                         case "A-Paladin":
@@ -426,8 +450,10 @@ public class Game implements Runnable
                             }
                         }
                         else
-                            Tile.tileList[190].Draw(g, tileCoordX * Tile.TILE_WIDTH, tileCoordY * Tile.TILE_HEIGHT);
-                        if (cursor.getSelectedChar() != null && cursor.getSelectedChar().getMoving()) {
+                            Tile.tileList[190].Draw(g, tileCoordX * Tile.TILE_WIDTH, tileCoordY * Tile.TILE_HEIGHT);//tile-ul pentru fog of war, care se pune peste celelalte tileuri
+                        if (cursor.getSelectedChar() != null && cursor.getSelectedChar().getMoving()) { //cand un unit se afla in starea de miscare, se randeaza niste tile-uri
+                                                                                                        //ajutatoare care arata unde e poate misca personajul
+                                                                                                        //la fel si pentru range-ul de atac
                             int range = AStar.aStar(mapTable, cursor.getSelectedChar().getX(), cursor.getSelectedChar().getY(), tileCoordX, tileCoordY, cl);
                             if (range <= cursor.getSelectedChar().getStat("MOV") * 10) {
                                 Tile.hoverTile.Draw(g, tileCoordX * Tile.TILE_WIDTH, tileCoordY * Tile.TILE_HEIGHT);
@@ -436,14 +462,13 @@ public class Game implements Runnable
                             }
                         }
                     }
-                    if (cl.contains(cursor.getX(), cursor.getY())) {
-                        //System.out.println("HOVER ON UNIT");
+                    if (cl.contains(cursor.getX(), cursor.getY())) {//randarea cursorului
                         if (cl.find(cursor.getX(), cursor.getY()) != null)
                             cl.find(cursor.getX(), cursor.getY()).Draw(wnd);
                     }
 
                 }
-                if (cm.getOpen()) {
+                if (cm.getOpen()) {//cand un meniu este deschis, se randeaza iamginea de meniu
                     System.out.println("OPEN");
                     cm.draw(g, cursor.getX() * Tile.TILE_WIDTH, cursor.getY() * Tile.TILE_HEIGHT);
                 }
@@ -451,42 +476,26 @@ public class Game implements Runnable
                     System.out.println("Selected character");
                     if (cursor.getSelectedChar().getDisplayStats()) {
                         System.out.println("DISPLAYING MENU");
-                        cursor.getSelectedChar().dispStats(wnd);
+                        cursor.getSelectedChar().dispStats(wnd);//randarea meniu cu atributele (stat-urile) personajului
                     }
                 }
-
-                //g.drawRect(cursor.getX() * Tile.TILE_WIDTH, cursor.getY() * Tile.TILE_HEIGHT, Tile.TILE_WIDTH, Tile.TILE_HEIGHT);
                 if (!(cursor.getSelectedChar() != null && cursor.getSelectedChar().getDisplayStats()))
                     Tile.cursorTile.Draw(g, cursor.getX() * Tile.TILE_WIDTH, cursor.getY() * Tile.TILE_HEIGHT);
                 if(gameProgressState!=null&&!gameProgressState)
                 {
                     g.drawImage(Assets.gameOverScreen,0,0, wnd.GetWndWidth(),wnd.GetWndHeight(),null);
+                    //game over -> ecran de game over
                 }
         }
-        if(gameProgressState==null) {
-        //if(true) {
-
-        }else{
-            if(gameProgressState)
-            {
-                //win
-
-            }else {
-                //lose
-
-            }
-        }
-
             // end operatie de desenare
             /// Se afiseaza pe ecran
         bs.show();
-
             /// Elibereaza resursele de memorie aferente contextului grafic curent (zonele de memorie ocupate de
             /// elementele grafice ce au fost desenate pe canvas).
         g.dispose();
     }
 
-    public String CheckAdjacentEnemies(){
+    public String CheckAdjacentEnemies(){//verifica daca sunt inamici in venicatatea personajului (imi era mai usor sa le scriu in engleza)
         if(cursor.getSelectedChar()!=null && cm.getOpen()==true)//I have a unit selected and the menu is open
         {
             //checking if tiles adjacent to cursor host any character
@@ -713,7 +722,7 @@ public class Game implements Runnable
 
     }
 
-    public boolean isInFog(int x, int y){
+    public boolean isInFog(int x, int y){//verificare conditii fog of war (folosit distanta manhatten)
         boolean ok = false;
         for(Character unit: cl.charList)
         {
@@ -728,9 +737,10 @@ public class Game implements Runnable
     }
 
     public void playMusic(Integer i){
-        sound.setFile(i);
-        sound.play();
-        sound.loop();
+        if(sound.getIndex()!=null) sound.stop();
+            sound.setFile(i);
+            sound.play();
+            sound.loop();
     }
     public void stopMusic(){
         sound.stop();
@@ -739,10 +749,12 @@ public class Game implements Runnable
         soundEffects.setFile(i);
         soundEffects.play();
     }
+    //functii de rulare BGM, oprire BGM si sound efect-uri
 
-    public int fn(int x, int y)
+    public int convert2Dto1D(int x, int y)
     {
         return (x*32)+y;
+        //functie ajutatoare coordonate de pe tile sheet pentru generarea nivelelor
     }
 }
 

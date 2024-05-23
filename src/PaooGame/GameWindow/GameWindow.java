@@ -4,10 +4,6 @@ import PaooGame.Misc.KeyHandler;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-import java.security.Key;
 
 /*! \class GameWindow
     \brief Implementeaza notiunea de fereastra a jocului.
